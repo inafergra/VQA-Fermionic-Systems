@@ -37,8 +37,8 @@ def h_gate(t,J, indices):
     A[j+beta,i+alpha] = -2
 
     A2 = A*A
-    exp_A = I + (np.sin(2*t)/2)*A + ((np.cos(2*t)-1)/2)*A2
-    exp_A_dagger = I - (np.sin(2*t)/2)*A + ((np.cos(2*t)-1)/2)*A2
+    exp_A = I + (np.sin(2*t)/2)*A + ((np.cos(2*t)-1)/4)*A2
+    exp_A_dagger = I - (np.sin(2*t)/2)*A + ((np.cos(2*t)-1)/4)*A2
 
     new_J = exp_A * J * exp_A_dagger
 
