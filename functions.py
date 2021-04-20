@@ -12,7 +12,7 @@ def energy(J):
     m = 0
     for l in range(N):
         m += J[2*l+1,2*l]
-    energy = -2*m
+    energy = 0.5*(-2*m) #0.5 due to the one half factor in front  of the hamiltonian
     return energy
 
 def init_coeff_matrix(N, mean=0, J_value=1):
@@ -71,7 +71,7 @@ def new_energy(optimal_time,new_J,indices):
     new_energy = energy(new_J)
     return new_energy
 
-def energy_levels(J, k):
+def exact_energy_levels(J, k):
     '''
     Finds the first k exact energy levels through exact diagonalization
     '''
@@ -79,16 +79,18 @@ def energy_levels(J, k):
 
     eig_vals, O = np.linalg.eig(np.matmul(J,J))
     #print(eig_vals) #-(epsilon_k^2)
-    epsilons = np.sqrt(abs(eig_vals))/2
-    energies[0] = -np.sum(epsilons)
+    parity = np.linalg.det(O)
+    print(parity)
+    epsilons = np.sqrt(abs(eig_vals))
+    energies[0] = -np.sum(epsilons)/2
     k =3
-    for i in range(k-1):
+    for i in range(1, k-1):
         #print('epsilons', epsilons)
         a  = np.argmin(epsilons) 
         epsilons[a]+= -energies[0]
         a  = np.argmin(epsilons)
         #print('index of the min', a)      
-        energies[i+1] = energies[i] + 2*epsilons[a]
+        energies[i] = energies[i-1] + 2*epsilons[a]
         epsilons[a]+= -energies[0]
 
     return energies

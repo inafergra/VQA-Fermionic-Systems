@@ -17,7 +17,8 @@ print(f'Initial energy is {init_energy}')
 #How to know we are in the ground state??
 new_J = J
 energy_list= []
-num_gates = 300
+energy_list.append(init_energy)
+num_gates = 2500
 
 for k in range(num_gates):
     #draw random i,alpha,j,beta 
@@ -39,14 +40,25 @@ for k in range(num_gates):
     #print(new_J)
     final_energy = energy(new_J)
     energy_list.append(final_energy)
-    #print(f'Energy is {final_energy}')
+    #print(energy_list)
+
+#num_gates = len(energy_list)
 
 print(f'Final energy is {final_energy}')
 
-print(f'Exact ground energy: {energy_levels(J,2)[0]}')
+exact_energies = exact_energy_levels(J,2)
+print(f'Exact ground energy: {exact_energies[0]}')
 
-plt.plot(energy_list)
+plt.plot(range(round(num_gates/2), num_gates), energy_list[-round(num_gates/2):], label = 'Algorithmic cooling')
+
+#plotting the exact energies
+#for i in range(len(exact_energies)): 
+#    plt.axhline(y=exact_energies[i], linestyle='-', label = f'Energy level {i}')
+plt.axhline(y=exact_energies[0], color =  'r', linestyle='--', label = f'Energy level 0')
+plt.axhline(y=exact_energies[1], color =  'y', linestyle='--', label = f'Energy level 1')
+
 plt.xlabel('Number of unitaries')
 plt.ylabel('Energy')
+plt.legend()
 #plt.savefig(f'Plots/N={N}, p={len(energy_list)}')
-#plt.show()
+plt.show()
