@@ -3,7 +3,7 @@ import numpy as np
 from scipy.optimize import fsolve
 import sympy as sy
 import math
-
+from sympy import *
 
 def givens_rotation_matrix(J, i, j, t):
     """Compute matrix for Givens rotation G(i,j;t)"""
@@ -14,6 +14,16 @@ def givens_rotation_matrix(J, i, j, t):
     G[j, j] = np.cos(2*t)
     G[i, j] = np.sin(2*t)
     G[j, i] = -np.sin(2*t)
+
+    return G
+
+def givens_rotation_symbolic(J,i,j,t):
+
+    G = eye(len(J))
+    G[i, i] = cos(2*t)
+    G[j, j] = cos(2*t)
+    G[i, j] = sin(2*t)
+    G[j, i] = -sin(2*t)
 
     return G
 

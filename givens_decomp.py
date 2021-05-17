@@ -7,7 +7,7 @@ np.set_printoptions(precision=2)
 #np.random.seed(seed=1)
 
 #Number of fermions
-N = 2
+N = 10
 
 #Initial state
 J = init_coeff_matrix(N, mean=0, J_value=1)
@@ -22,9 +22,14 @@ energy_list.append(init_energy)
 
 # Find the O
 eig_vals, O = np.linalg.eigh(np.matmul(J,J))
+O_temp = O
+O_temp[:,0] = O[:,3]
+O_temp[:,3] = O[:,0]
+O = O_temp 
+
 #print(np.linalg.matrix_rank(O))
 #print(O)
-print('Williamson matrix W:')
+print('Williamson matrix O:')
 print(np.matmul(np.matmul(np.transpose(O),J),O))
 print(f'Determinant of O is {np.linalg.det(O)}')
 
@@ -35,24 +40,66 @@ for j in range(2*N-1,0,-1):
     for i in range(0,j):
         print(i,j)
         
-        t = 0.5 * np.arctan(O[i,j]/O[i+1,j])
+        t = 0.5 * np.arctan(-O[i,j]/O[i+1,j])
         t_list.append(t)
         G = givens_rotation_matrix(O,i,i+1,t)
         O = G @ O 
 
         print(O)
 
-print('Now the Js:')
-print('----------------------')
+print('-----------------------------------------------------------')
+print('Initial J')
+print(J)
 n = 0
+'''
+# Exact decomposition from the Williamson transformation O
 for j in range(2*N-1,0,-1):
     for i in range(0,j):
-        print(i,j)
+        print(f'Apply G{i+1,i+2}')
+        print(f'theta = 2t is : {2*t_list[n]}')
         G = givens_rotation_matrix(J,i,i+1,t_list[n])
-        J = np.transpose(G) @ J @ G
+        J = G @ J @ np.transpose(G)
         n += 1
         print(J)
+'''
+'''
+J = np.array([[ 0,  3,  2,  -7],
+       [ -3,  0, -5,  -12],
+       [ -2, 5, 0, -8],
+       [ 7, 12, 8, 0]])
+'''
 
+print(J)
+
+# Paardekooper
+for iteration in range():
+    for j in range(2*N-2,1,-2):
+        for i in range(0,j,2):
+            print(i,j)
+
+            phi = 0.5 * np.arctan(2 * (J[i,i+1]*J[i+1,j] - J[i,j+1]*J[j,j+1]) / ( J[i,j+1]**2  + J[i,i+1]**2 - J[i+1,j]**2 - J[j,j+1]**2))
+            G = givens_rotation_matrix(J,i,j,0.5*phi)
+            J = np.transpose(G) @ J @ G
+
+            print(J)
+
+            phi =  np.arctan(-J[i, j+1]/J[i,i+1])
+            G = givens_rotation_matrix(J,i+1,j+1,0.5 *phi)
+            J = np.transpose(G) @ J @ G
+
+            print(J)
+
+            phi = 0.5 * np.arctan(2 * (J[i,j]*J[j,j+1] + J[i,i+1]*J[i+1,j+1]) / ( J[i,i+1]**2  + J[i,j]**2 - J[i+1,j+1]**2 - J[j,j+1]**2))
+            G = givens_rotation_matrix(J,i,j+1,0.5 *phi)
+            J = np.transpose(G) @ J @ G
+
+            print(J)
+
+            phi = np.arctan(-J[i, j]/J[i,i+1])
+            G = givens_rotation_matrix(J,i+1,j,0.5 *phi)
+            J = np.transpose(G) @ J @ G
+
+            print(J)
 
 
 '''
