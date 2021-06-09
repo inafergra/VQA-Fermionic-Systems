@@ -5,222 +5,89 @@ import sympy as sy
 import math
 from sympy import *
 
-def givens_rotation_matrix(J, i, j, t):
+
+
+def givens_rotation_matrix(H, i, j, t):
     """Compute matrix for Givens rotation G(i,j;t)"""
 
-    G = np.identity(len(J))
+    G = np.identity(len(H))
 
     G[i, i] = np.cos(2*t)
     G[j, j] = np.cos(2*t)
     G[i, j] = np.sin(2*t)
     G[j, i] = -np.sin(2*t)
-
     return G
 
-def givens_rotation_symbolic(J,i,j,t):
-
-    G = eye(len(J))
-    G[i, i] = cos(2*t)
-    G[j, j] = cos(2*t)
-    G[i, j] = sin(2*t)
-    G[j, i] = -sin(2*t)
-
-    return G
-
-def equations(x, indices, J):
-    x, y = x[0], x[1]
-
-    #Compute the A matrix
-    N = int(np.size(J,axis=0)/2)
-    i = indices[0] ; alpha = indices[1]; j = indices[2]; beta = indices[3]
-    A = np.zeros([2*N,2*N])
-    A[2*i+alpha,2*j+beta] = 2
-    A[2*j+beta,2*i+alpha] = -2
-
-    JA = np.matmul(J,A)
-    AJ = np.matmul(A,J)
-    AA = np.matmul(A,A)
-    comm_JA = JA - AJ
-    a = energy(comm_JA)
-    b = energy(J@AA + AA@J)
-    g = energy(np.matmul(np.matmul(A,comm_JA), A))
-    d = energy(A@J@A)
-    e = energy(AA@J@AA)
-
-    return (a*y+b*x/2+g*(y*y-y-x*x)/4-d*x*y+e*x*(1-y)/4, x**2+y**2-1)
-
-def equations_sympy(indices, J):
-    #Compute the A matrix
-    N = int(np.size(J,axis=0)/2)
-    i = indices[0] ; alpha = indices[1]; j = indices[2]; beta = indices[3]
-    A = np.zeros([2*N,2*N])
-    A[2*i+alpha,2*j+beta] = 2
-    A[2*j+beta,2*i+alpha] = -2
-    JA = np.matmul(J,A)
-    AJ = np.matmul(A,J)
-    AA = np.matmul(A,A)
-    comm_JA = JA - AJ
-    a = energy(comm_JA)
-    b = energy(J@AA + AA@J)
-    g = energy(A@comm_JA@A)
-    #g = energy(np.matmul(np.matmul(A,comm_JA), A))
-    d = energy(A@J@A)
-    e = energy(AA@J@AA)
-
-    x, y = sy.symbols('x y')
-    eq1 =a*y+b*x/2+g*(y*y-y-x*x)/4-d*x*y+e*x*(1-y)/4
-    eq2 = x**2+y**2-1
-    sol = sy.solve([eq1, eq2], [x, y])
-    soln = [tuple(v.evalf() for v in s) for s in sol]
-    print(soln)
-    return soln
-
-#Groener basis--------------------------
-
-def groebner(x, indices, J):
-
-    x, y = x[0], x[1]
-
-    #Compute the A matrix
-    N = int(np.size(J,axis=0)/2)
-    i = indices[0] ; alpha = indices[1]; j = indices[2]; beta = indices[3]
-    A = np.zeros([2*N,2*N])
-    A[2*i+alpha,2*j+beta] = 2
-    A[2*j+beta,2*i+alpha] = -2
-
-    JA = np.matmul(J,A)
-    AJ = np.matmul(A,J)
-    AA = np.matmul(A,A)
-    comm_JA = JA - AJ
-    a = energy(comm_JA)
-    b = energy(J@AA + AA@J)
-    g = energy(A@comm_JA@A)
-    d = energy(A@J@A)
-    e = energy(AA@J@AA)
-
-    a1 = (16 * d ** 2 + 8 * d * e + e ** 2 + 4 * g ** 2)
-    a2 = (16 * a * g - 16 * b * d - 4 * b * e - 8 * d * e - 2 * e ** 2)
-    a3 = (16 * a ** 2 + 4 * b ** 2 + 4 * b * e - 16 * d ** 2 - 8 * d * e - 8 * g ** 2)
-    a4 = (-16 * a * g + 16 * b * d + 4 * b * e + 8 * d * e + 2 * e ** 2)
-    a5 = - 4 * b ** 2 - 4 * b * e - e ** 2 + 4 * g ** 2
-
-    b1 = (32 * a * b * d + 8 * a * b * e + 16 * a * d * e + 4 * a * e ** 2 + 8 * b ** 2 * g + 8 * b * e * g - 32 * d ** 2 * g - 16 * d * e * g)
-    b2 = (64 * d ** 3 + 48 * d ** 2 * e + 12 * d * e ** 2 + 16 * d * g ** 2 + e ** 3 + 4 * e * g ** 2)
-    b3 = (64 * a * d * g + 16 * a * e * g - 32 * b * d ** 2 - 16 * b * d * e - 2 * b * e ** 2 + 8 * b * g ** 2 - 16 * d ** 2 * e - 8 * d * e ** 2 - e ** 3 + 4 * e * g ** 2)
-    b4 = (64 * a ** 2 * d + 16 * a ** 2 * e + 16 * a * b * g + 8 * a * e * g - 64 * d ** 3 - 48 * d ** 2 * e - 12 * d * e ** 2 - 16 * d * g ** 2 - e ** 3 - 4 * e * g ** 2)
-    b5 = - 32 * a * d * g - 8 * a * e * g + 32 * b * d ** 2 + 16 * b * d * e + 2 * b * e ** 2 - 8 * b * g ** 2 + 16 * d ** 2 * e + 8 * d * e ** 2 + e ** 3 - 4 * e * g ** 2    
-    
-    return (a1 * y**4 + a2 * y**3 + a3 * y**2 + a4 * y + a5, b1 * x + b2 * y**3 + b3 * y**2 + b4 * y +b5)
-
-def groebner_sympy(x, indices, J):
-
-    x, y = x[0], x[1]
-    #Compute the A matrix
-    N = int(np.size(J,axis=0)/2)
-    i = indices[0] ; alpha = indices[1]; j = indices[2]; beta = indices[3]
-    A = np.zeros([2*N,2*N])
-    A[2*i+alpha,2*j+beta] = 2
-    A[2*j+beta,2*i+alpha] = -2
-
-    JA = np.matmul(J,A)
-    AJ = np.matmul(A,J)
-    AA = np.matmul(A,A)
-    comm_JA = JA - AJ
-    a = energy(comm_JA)
-    b = energy(J@AA + AA@J)
-    g = energy(A@comm_JA@A)
-    #g = energy(np.matmul(np.matmul(A,comm_JA), A))
-    d = energy(A@J@A)
-    e = energy(AA@J@AA)
-    #print(a,b,g,d,e)
-    a1 = (16 * d ** 2 + 8 * d * e + e ** 2 + 4 * g ** 2)
-    a2 = (16 * a * g - 16 * b * d - 4 * b * e - 8 * d * e - 2 * e ** 2)
-    a3 = (16 * a ** 2 + 4 * b ** 2 + 4 * b * e - 16 * d ** 2 - 8 * d * e - 8 * g ** 2)
-    a4 = (-16 * a * g + 16 * b * d + 4 * b * e + 8 * d * e + 2 * e ** 2)
-    a5 = - 4 * b ** 2 - 4 * b * e - e ** 2 + 4 * g ** 2
-    #print(a1,a2,a3,a4,a5)
-    b1 = (32 * a * b * d + 8 * a * b * e + 16 * a * d * e + 4 * a * e ** 2 + 8 * b ** 2 * g + 8 * b * e * g - 32 * d ** 2 * g - 16 * d * e * g)
-    b2 = (64 * d ** 3 + 48 * d ** 2 * e + 12 * d * e ** 2 + 16 * d * g ** 2 + e ** 3 + 4 * e * g ** 2)
-    b3 = (64 * a * d * g + 16 * a * e * g - 32 * b * d ** 2 - 16 * b * d * e - 2 * b * e ** 2 + 8 * b * g ** 2 - 16 * d ** 2 * e - 8 * d * e ** 2 - e ** 3 + 4 * e * g ** 2)
-    b4 = (64 * a ** 2 * d + 16 * a ** 2 * e + 16 * a * b * g + 8 * a * e * g - 64 * d ** 3 - 48 * d ** 2 * e - 12 * d * e ** 2 - 16 * d * g ** 2 - e ** 3 - 4 * e * g ** 2)
-    b5 = - 32 * a * d * g - 8 * a * e * g + 32 * b * d ** 2 + 16 * b * d * e + 2 * b * e ** 2 - 8 * b * g ** 2 + 16 * d ** 2 * e + 8 * d * e ** 2 + e ** 3 - 4 * e * g ** 2    
-    #print(b1,b2,b3,b4,b5)
-
-    x, y = sy.symbols('x y')
-    eq1 = a1 * y**4 + a2 * y**3 + a3 * (y**2) + a4 * y + a5
-    eq2 = b1 * x + b2 * y**3 + b3 * (y**2) + b4 * y + b5
-    
-    #print(eq2)
-    sol = sy.solve([eq1, eq2], [x, y],simplify=False)
-    print(sol)
-    soln = [tuple(v.evalf() for v in s) for s in sol]
-    print(soln)
-    return soln
+def off_diag_frobenius_norm(H):
+    n = int(len(H)/2)
+    x=0
+    for i in range(n):
+        for j in range(i+1,n):
+            x += np.sqrt(H[2*i,2*j]**2 + H[2*i+1,2*j]**2 + H[2*i,2*j+1]**2 + H[2*i+1,2*j+1]**2)
+    return 2*x
 
 
-def arc_things(x,y):
+def paardekoper_algorithm(H, tolerance = 1e-10):
     '''
-    Returns the angle t corresponding to x = sin(2t), y = cos(2t).
+    Naive strategy
     '''
-    if x>0:
-        t =  0.5*np.arctan(x/y)
-    else:
-        t = 0.5*np.arctan(x/y) + np.pi
-    return t
-    '''
-    t = 0
-    if x>0: #upper half of the circle --> arcos works since returns between (0,pi)
-        t = np.arccos(y)/2 #(0,pi)
-    elif x<0 and y>0: #right bottom half --> arcsin works since returns between (-pi/2, pi/2)
-        t = np.arcsin(x)/2 #(-pi/2, pi/2)
-    elif x<0 and y<0:
-        t = - np.arccos(y)/2
-    return t
-    '''
+    N = N = int(np.size(H,axis=0)/2)
+    n_iter = 0
+    norm = off_diag_frobenius_norm(H)
 
-from scipy.optimize import root    
-from sympy.solvers import solve
+    while norm > tolerance:
+        for j in range(2*N-2,1,-2):
+            for i in range(0,j,2):
 
-def optimal_t(indices, J):
+                phi = 0.5 * np.arctan(2 * (H[i,i+1]*H[i+1,j] - H[i,j+1]*H[j,j+1]) / ( H[i,j+1]**2  + H[i,i+1]**2 - H[i+1,j]**2 - H[j,j+1]**2))
+                G = givens_rotation_matrix(H,i,j,0.5*phi)
+                H = np.transpose(G) @ H @ G
 
-    #x, y =  fsolve(equations, (1,1), args=(indices, J))
-    #x, y =  fsolve(groebner, (.5,.5), args=(indices, J))
-    #x,y = groebner_sympy(indices, J)
-    #print(equations_sympy(indices, J))
-    x = float(equations_sympy(indices, J)[0][0])
-    y = float(equations_sympy(indices, J)[0][1])
+                phi =  np.arctan(-H[i, j+1]/H[i,i+1])
+                G = givens_rotation_matrix(H,i+1,j+1,0.5 *phi)
+                H = np.transpose(G) @ H @ G
 
-    #x, y =  root(groebner_sympy, (.5,.5), args=(indices, J)).x
-    t = arc_things(x,y)
-    print(f't={t}')  #x = sin(2t), y = cos(2t)
-    return t
-    '''
-    if abs(x)>1 or abs(y)>1:
-        t=0
-    else:
-        t= arc_things(x,y)
-    return t
-    '''
+                phi = 0.5 * np.arctan(2 * (H[i,j]*H[j,j+1] + H[i,i+1]*H[i+1,j+1]) / ( H[i,i+1]**2  + H[i,j]**2 - H[i+1,j+1]**2 - H[j,j+1]**2))
+                G = givens_rotation_matrix(H,i,j+1,0.5 *phi)
+                H = np.transpose(G) @ H @ G
 
-def f(t, indices, J):
-    #Compute the A matrix
-    N = int(np.size(J,axis=0)/2)
-    i = indices[0] ; alpha = indices[1]; j = indices[2]; beta = indices[3]
-    A = np.zeros([2*N,2*N])
-    A[2*i+alpha,2*j+beta] = 2
-    A[2*j+beta,2*i+alpha] = -2
+                phi = np.arctan(-H[i, j]/H[i,i+1])
+                G = givens_rotation_matrix(H,i+1,j,0.5 *phi)
+                H = np.transpose(G) @ H @ G
 
-    c = (np.cos(2*t)-1)/4
-    s = np.sin(2*t)/2
-    JA = np.matmul(J,A)
-    AJ = np.matmul(A,J)
-    AA = np.matmul(A,A)
-    comm_JA = JA - AJ
-    a = energy(comm_JA)
-    b = energy(J@AA + AA@J)
-    g = energy(A@comm_JA@A)
-    d = energy(A@J@A)
-    e = energy(AA@J@AA)
+                norm = off_diag_frobenius_norm(H)
+                n_iter += 1 
 
-    return a*s-b*c+g*s*c-d*(s*s)+e*(c*c)
+    sweeps = 2*n_iter/(N*(N-1))
+
+    return H, norm, sweeps
+
+
+def optimal_givens_sequence(H):
+
+    N = N = int(np.size(H,axis=0)/2)
+
+    # Find the O
+    eig_vals, O = np.linalg.eigh(np.matmul(H,H))
+    print(f'Determinant of O is {np.linalg.det(O)}')
+
+    t_list = []
+
+    #Decompose O in Givens rotations
+    for j in range(2*N-1,0,-1):
+        for i in range(0,j):            
+            t = 0.5 * np.arctan(-O[i,j]/O[i+1,j])
+            t_list.append(t)
+            G = givens_rotation_matrix(O,i,i+1,t)
+            O = G @ O 
+
+    # Exact decomposition from the Williamson transformation O
+    n=0
+    for j in range(2*N-1,0,-1):
+        for i in range(0,j):
+            print(f'Apply G{i+1,i+2}')
+            print(f'theta = 2t is : {2*t_list[n]}')
+            G = givens_rotation_matrix(H,i,i+1,t_list[n])
+            H = G @ H @ np.transpose(G)
+            n += 1
 

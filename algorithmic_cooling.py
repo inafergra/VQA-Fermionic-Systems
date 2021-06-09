@@ -4,28 +4,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize, differential_evolution
 np.set_printoptions(precision=2)
-#np.random.seed(seed=1)
+np.random.seed(seed=3)
 
 #------------------Number of fermions
-N = 2
+N = 3
 
 #------------------Initial state
-J = init_coeff_matrix(N, mean=0, J_value=1)
-#print('Initial J:')
-#print(J)
-init_energy = energy(J)
+H = init_coeff_matrix(N, mean=0, H_value=1)
+#print('Initial H:')
+#print(H)
+init_energy = energy(H)
 print(f'Initial energy is {init_energy}')
 
-new_J_num = J
-new_J_eq = J
-new_J_eq_shifted = J
-energy_list_num= []
-energy_list_eq= []
-energy_list_num.append(init_energy)
-energy_list_eq.append(init_energy)
-num_gates = 500
+new_H_eq_mix = H
+new_H_num = H
 
-for k in range(num_gates):
+energy_list_mix = []
+energy_list_num = []
+energy_list_num.append(init_energy)
+#energy_list_eq.append(init_energy)
+num_gates = 100
+
+for k in range(200):
     # -------------------------------Draw random i,alpha,j,beta---------------------
     i=0;j=0;alpha=0;beta=0
     while (i==j) and (alpha==beta):
@@ -36,52 +36,52 @@ for k in range(num_gates):
     #----------------------------------------Optimizing the time---------------------
     t0=np.random.rand() #initial guess
     
-    minimize_dictionary = minimize(new_energy, x0=t0,args=(new_J_num,indices), options={'disp': False}, method = 'Nelder-Mead')
-    #minimize_dictionary = differential_evolution(new_energy,args=(new_J,indices), bounds=[(0,2)], disp = False)#, maxiter=10000)
+    minimize_dictionary = minimize(new_energy, x0=t0,args=(new_H_num,indices), options={'disp': False}, method = 'Nelder-Mead')
+    #minimize_dictionary = differential_evolution(new_energy,args=(new_H,indices), bounds=[(0,2)], disp = False)#, maxiter=10000)
 
     optimal_time_num = minimize_dictionary['x'][0]
-    print(f'Optimal time num: {optimal_time_num}')
+    #print(f'Optimal time num: {optimal_time_num}')
 
     #-------------------------------------Computing exact optimal t-------------------
     
-    #minimize_dictionary = minimize(f, x0=t0,args=(indices,new_J), options={'disp': False}, method = 'Nelder-Mead')
+    #minimize_dictionary = minimize(f, x0=t0,args=(indices,new_H), options={'disp': False}, method = 'Nelder-Mead')
     #optimal_time = minimize_dictionary['x'][0]
-    optimal_time_eq = optimal_t(indices,new_J_eq)
-    optimal_time_eq_shifted = optimal_time_eq - np.pi
-    print(f'Optimal time eq: {optimal_time_eq}')
+    #optimal_time_eq = optimal_t(indices,new_H_eq)
+    #optimal_time_eq_shifted = optimal_time_eq - np.pi
+    #print(f'Optimal time eq: {optimal_time_eq}')
     #--------------------------------------Computing energy after h---------------------
-    new_J_num = appy_h_gate(optimal_time_num,new_J_num, indices)
-    final_energy_num = energy(new_J_num)
+    new_H_num = appy_h_gate(optimal_time_num,new_H_num, indices)
+    final_energy_num = energy(new_H_num)
 
-    new_J_eq = appy_h_gate(optimal_time_eq,new_J_eq, indices)
-    final_energy_eq= energy(new_J_eq)
+    #new_H_eq = appy_h_gate(optimal_time_eq,new_H_eq, indices)
+    #final_energy_eq= energy(new_H_eq)
 
-    new_J_eq_shifted = appy_h_gate(optimal_time_eq_shifted,new_J_eq, indices)
-    final_energy_eq_shifted = energy(new_J_eq_shifted)
+    #new_H_eq_shifted = appy_h_gate(optimal_time_eq_shifted,new_H_eq, indices)
+    #final_energy_eq_shifted = energy(new_H_eq_shifted)
 
-    if final_energy_eq_shifted < final_energy_eq:
-        final_energy_eq = final_energy_eq_shifted
-        new_J_eq = new_J_eq_shifted
-        print('Heyyyyy')
+    #if final_energy_eq_shifted < final_energy_eq:
+    #    final_energy_eq = final_energy_eq_shifted
+    #    new_H_eq = new_H_eq_shifted
+    #    print('Heyyyyy')
 
-    print(f'Exact energy :{final_energy_eq}')
-    print(f'Numeric energy :{final_energy_num}')
+    #print(f'Exact energy :{final_energy_eq}')
+    #print(f'Numeric energy :{final_energy_num}')
 
-    energy_list_eq.append(final_energy_eq)
+    #energy_list_eq.append(final_energy_eq)
     energy_list_num.append(final_energy_num)
     #print(energy_list)
 
 #num_gates = len(energy_list)
-#print(f'Final energy is {final_energy_num}')
-
-exact_energies = exact_energy_levels(J,2)
+print(new_H_num)
+exact_energies = exact_energy_levels(H,2)
+print(f'Numerical energy is {final_energy_num}')
 print(f'Exact ground energy: {exact_energies[0]}')
 
 #plt.plot(range(round(num_gates/2), num_gates), energy_list_num[-round(num_gates/2):], label = 'Algorithmic cooling numeric')
 #plt.plot(range(round(num_gates/2), num_gates), energy_list_exact[-round(num_gates/2):], label = 'Algorithmic cooling exact')
 
 plt.plot(energy_list_num, label = 'Algorithmic cooling numeric')
-plt.plot(energy_list_eq, label = 'Algorithmic cooling exact')
+#plt.plot(energy_list_eq, label = 'Algorithmic cooling exact')
 
 #--------------------plotting the exact energies
 #for i in range(len(exact_energies)): 
