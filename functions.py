@@ -32,6 +32,14 @@ def energy_excited_state(H, k):
     energy = 0.5*(-2*m)
     return energy
 
+def squared_hamiltonian_average(H):
+    ''' Calculates the average of the squared hamiltonian '''
+
+    x = 0
+    for l in range(2*N)
+        x += H[2*i]
+
+
 def energy_after_x_rotations(H, theta):
     '''
     Computes the energy of the state given by doing an X rotation of theta[i] in qubit i. 

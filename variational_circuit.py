@@ -14,14 +14,25 @@ print(f'{N} fermions')
 
 
 
-# Apply Uj
-H = init_coeff_matrix(N, mean=0, H_value=1)
-init_norm = off_diag_frobenius_norm(H)
+# Get Uj
+H0 = init_coeff_matrix(N, mean=0, H_value=1)
+init_norm = off_diag_frobenius_norm(H0)
 print(f'Initial norm {init_norm}') 
 
-H, norm, sweeps = paardekoper_algorithm(H, tolerance = 1e-10)
+H, norm, sweeps, angles = paardekoper_algorithm(H0, tolerance = 1e-10)
 
 print(f'Final norm {norm}')
 print(f'Number of sweeps = {sweeps}')
+print(len(angles))
+# Apply Uj
+init_norm = off_diag_frobenius_norm(H0)
+print(f'Initial norm {init_norm}') 
+
+H, norm, sweeps = paardekoper_algorithm(H0, tolerance = 1e-10, saved_angles =  angles)
+
+print(f'Final norm {norm}')
+print(f'Number of sweeps = {sweeps}')
+
+
 
 energy = energy_after_x_rotations(H,theta)

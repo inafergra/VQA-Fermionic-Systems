@@ -10,7 +10,7 @@ sweeps_list = []
 for N in range(2,100,10):
     H = init_coeff_matrix(N, mean=0, H_value=1)
     init_norm = off_diag_frobenius_norm(H)
-    H, norm, sweeps = paardekoper_algorithm(H, tolerance = 1e-10)
+    H, norm, sweeps, angles = paardekoper_algorithm(H, tolerance = 1e-10)
 
     sweeps_list.append(sweeps)
 
