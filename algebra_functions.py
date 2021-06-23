@@ -5,7 +5,23 @@ import sympy as sy
 import math
 from sympy import *
 
-
+def greedy_algorithm(H):
+    ''' 
+    Given that H is already in Williamson form, applies a series of givens rotations
+    that brings H to the lower energy state
+    '''
+    N = int(np.size(H,axis=0)/2)
+    E = energy(H)
+    
+    for i in range(2*N-1):
+        for l in range(1,2*N-i):
+            G = givens_rotation_matrix(H, i, i+l, np.pi/2)
+            H_1 = np.transpose(G) @ H @ G
+            E_1 = energy(H_1)
+            if  E_1 < E:
+                H = H_1
+                E = E_1
+    return H
 
 def givens_rotation_matrix(H, i, j, t):
     """Compute matrix for Givens rotation G(i,j;t)"""

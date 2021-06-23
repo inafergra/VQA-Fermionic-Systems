@@ -7,10 +7,10 @@ np.set_printoptions(precision=2)
 np.random.seed(seed=3)
 
 #------------------Number of fermions
-N = 3
+N = 10
 
 #------------------Initial state
-H = init_coeff_matrix(N, mean=0, H_value=1)
+H = init_coeff_matrix(N)
 #print('Initial H:')
 #print(H)
 init_energy = energy(H)
@@ -23,9 +23,9 @@ energy_list_mix = []
 energy_list_num = []
 energy_list_num.append(init_energy)
 #energy_list_eq.append(init_energy)
-num_gates = 100
+num_gates = 3000
 
-for k in range(200):
+for k in range(num_gates):
     # -------------------------------Draw random i,alpha,j,beta---------------------
     i=0;j=0;alpha=0;beta=0
     while (i==j) and (alpha==beta):
@@ -74,9 +74,12 @@ for k in range(200):
 #num_gates = len(energy_list)
 print(new_H_num)
 exact_energies = exact_energy_levels(H,2)
-print(f'Numerical energy is {final_energy_num}')
+theta = np.zeros(N)
 print(f'Exact ground energy: {exact_energies[0]}')
-
+print(f'Numerical energy is {final_energy_num}')
+#print(f'Energy function rotate {energy_after_x_rotations(theta, new_H_num)}')
+#print(f'Variance is {squared_hamiltonian_average(new_H_num) - energy(new_H_num)**2}')#{variance(np.zeros(N), new_H_num)}')
+#print(f'Variance rotating is {variance(theta, new_H_num)}')
 #plt.plot(range(round(num_gates/2), num_gates), energy_list_num[-round(num_gates/2):], label = 'Algorithmic cooling numeric')
 #plt.plot(range(round(num_gates/2), num_gates), energy_list_exact[-round(num_gates/2):], label = 'Algorithmic cooling exact')
 

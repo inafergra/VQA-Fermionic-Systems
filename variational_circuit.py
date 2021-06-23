@@ -2,37 +2,87 @@ from algebra_functions import *
 from functions import *
 import numpy as np
 import matplotlib.pyplot as plt
-np.set_printoptions(precision=2)
-np.random.seed(seed=1)
+from functools import partial
+np.set_printoptions(precision=1)
+#np.random.seed(seed=1)
 
-N = 5
+N = 40
 print(f'{N} fermions')
 
-# We start out with the vacuum |0>^(xn) 
-# and then apply X rotation to every qubit
-# so every qubit is in a superposition e**(itX/2)|0> = cos(t/2)|0> + i sin(t/2) |0>
+# Vanilla implementation
+print('Initializing matrix...')
+H0 = init_coeff_matrix(N)
+print(f'Initial energy {energy(H0)}')
+print(f'Initial off-diagonal norm {off_diag_frobenius_norm(H0)}') 
+
+print()
+
+print('Applying Paardakopers (Uj)...')
+H, norm, sweeps, angles = paardekoper_algorithm(H0, tolerance = 1e-15)
+print(f'Number of sweeps = {sweeps}')
+print(f'Off-diagonal norm {norm}') 
+print(f'Energy {energy(H)}')
+
+print()
+
+print('Applying greedy algorithm...')
+H = greedy_algorithm(H)
+print(f'Off-diagonal norm {off_diag_frobenius_norm(H)}') 
+print(f'Energy {energy(H)}')
+
+print()
+#H, norm, sweeps, angles = paardekoper_algorithm(H0, tolerance = 1e-15)
+#print(f'Energy {energy(H)}')
+
+
+exact_energies = exact_energy_levels(H0,2)
+print(f'Exact ground energy: {exact_energies[0]}')
+print(f'Exact second excited energy: {exact_energies[1]}')
+#print(H)
 
 
 
+
+
+
+print()
+
+
+pdb.set_trace()
 # Get Uj
-H0 = init_coeff_matrix(N, mean=0, H_value=1)
+H0 = init_coeff_matrix(N)
 init_norm = off_diag_frobenius_norm(H0)
-print(f'Initial norm {init_norm}') 
+print(f'Initial off-diagonal norm {init_norm}') 
+print(f'Initial variance {variance(np.zeros(N), H0)}')
+print(f'Initial variance {squared_hamiltonian_average(H0) - energy(H0)**2}')
+print(f'Initial energy {energy(H0)}')
 
 H, norm, sweeps, angles = paardekoper_algorithm(H0, tolerance = 1e-10)
 
 print(f'Final norm {norm}')
 print(f'Number of sweeps = {sweeps}')
-print(len(angles))
+
 # Apply Uj
-init_norm = off_diag_frobenius_norm(H0)
-print(f'Initial norm {init_norm}') 
-
-H, norm, sweeps = paardekoper_algorithm(H0, tolerance = 1e-10, saved_angles =  angles)
-
-print(f'Final norm {norm}')
+H, norm, sweeps = paardekoper_algorithm(H0, tolerance = 1e-2, saved_angles =  angles)
+print(f'Final off-norm without variational circuit {norm}')
 print(f'Number of sweeps = {sweeps}')
 
+print(f'Energy not rotating {energy_after_x_rotations(np.zeros(N), H)}')
+print(f'Variance not rotating {variance(np.zeros(N), H)}')
+var = partial(variance, H = H)
+#en = partial(energy_after_x_rotations, H=H)
 
+theta0 = np.random.random(N)
+minimize_dictionary = minimize(var, x0=theta0,
+                               options={'disp': True, 'maxiter': 20},
+                               method = 'Nelder-Mead')
+optimal_theta = minimize_dictionary['x']
 
-energy = energy_after_x_rotations(H,theta)
+print(optimal_theta)
+print(f'Variance with rotation {variance(optimal_theta, H)}')
+print(f'Energy with rotation {energy_after_x_rotations(optimal_theta, H)}')
+#print(f'Final norm {off_diag_frobenius_norm(H)} with variational circuit')
+
+exact_energies = exact_energy_levels(H,2)
+print(f'Exact ground energy: {exact_energies[0]}')
+print(f'Exact second excited energy: {exact_energies[1]}')

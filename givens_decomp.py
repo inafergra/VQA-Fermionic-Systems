@@ -29,23 +29,6 @@ plt.title('Tolerance 1e-10')
 plt.show()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 '''
 # Exact decomposition from the Williamson transformation O
 for j in range(2*N-1,0,-1):

@@ -14,4 +14,4 @@ def Majorana(i,alpha):
 
 print(jordan_wigner(Majorana(4,1)))
 
-print(np.e**(1j*Majorana(4,1)))
+#print(np.e**(1j*Majorana(4,1)))
