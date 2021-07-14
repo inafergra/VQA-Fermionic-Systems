@@ -3,18 +3,19 @@ from functions import *
 import numpy as np
 import matplotlib.pyplot as plt
 from functools import partial
-np.set_printoptions(precision=1)
-#np.random.seed(seed=1)
+np.set_printoptions(precision=2)
+np.random.seed(seed=1)
 
-N = 40
+N = 4
 print(f'{N} fermions')
 
-# Vanilla implementation
-print('Initializing matrix...')
+# Vanilla implementation (No variational circuit)
+
+print('Initializing matrix, initial state vacuum ...')
 H0 = init_coeff_matrix(N)
 print(f'Initial energy {energy(H0)}')
 print(f'Initial off-diagonal norm {off_diag_frobenius_norm(H0)}') 
-
+print(f"Variance {variance(np.zeros(N), H0)}")
 print()
 
 print('Applying Paardakopers (Uj)...')
@@ -22,34 +23,31 @@ H, norm, sweeps, angles = paardekoper_algorithm(H0, tolerance = 1e-15)
 print(f'Number of sweeps = {sweeps}')
 print(f'Off-diagonal norm {norm}') 
 print(f'Energy {energy(H)}')
-
+print(f"Variance {variance(np.zeros(N), H)}")
 print()
 
 print('Applying greedy algorithm...')
 H = greedy_algorithm(H)
 print(f'Off-diagonal norm {off_diag_frobenius_norm(H)}') 
 print(f'Energy {energy(H)}')
-
+print(f"Variance {variance(np.zeros(N), H)}")
 print()
-#H, norm, sweeps, angles = paardekoper_algorithm(H0, tolerance = 1e-15)
-#print(f'Energy {energy(H)}')
-
 
 exact_energies = exact_energy_levels(H0,2)
 print(f'Exact ground energy: {exact_energies[0]}')
 print(f'Exact second excited energy: {exact_energies[1]}')
-#print(H)
-
-
-
-
-
 
 print()
-
-
 pdb.set_trace()
-# Get Uj
+
+
+#H, norm, sweeps, angles = paardekoper_algorithm(H0, tolerance = 1e-15)
+#print(f'Energy {energy(H)}')
+
+
+#Variational circuit
+
+
 H0 = init_coeff_matrix(N)
 init_norm = off_diag_frobenius_norm(H0)
 print(f'Initial off-diagonal norm {init_norm}') 
@@ -57,15 +55,17 @@ print(f'Initial variance {variance(np.zeros(N), H0)}')
 print(f'Initial variance {squared_hamiltonian_average(H0) - energy(H0)**2}')
 print(f'Initial energy {energy(H0)}')
 
-H, norm, sweeps, angles = paardekoper_algorithm(H0, tolerance = 1e-10)
 
-print(f'Final norm {norm}')
-print(f'Number of sweeps = {sweeps}')
+# Get Uj
+print("Calculating the angles of Uj")
+H, norm, sweeps, angles = paardekoper_algorithm(H0, tolerance = 1e-10)
+print(f'Off-diagonal norm applying Uj: {norm}')
+#print(f'Number of sweeps = {sweeps}')
 
 # Apply Uj
 H, norm, sweeps = paardekoper_algorithm(H0, tolerance = 1e-2, saved_angles =  angles)
 print(f'Final off-norm without variational circuit {norm}')
-print(f'Number of sweeps = {sweeps}')
+#print(f'Number of sweeps = {sweeps}')
 
 print(f'Energy not rotating {energy_after_x_rotations(np.zeros(N), H)}')
 print(f'Variance not rotating {variance(np.zeros(N), H)}')
