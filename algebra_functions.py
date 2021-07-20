@@ -12,7 +12,7 @@ def greedy_algorithm(H):
     '''
     N = int(np.size(H,axis=0)/2)
     E = energy(H)
-    
+    x = 0
     for i in range(2*N-1):
         for l in range(1,2*N-i):
             G = givens_rotation_matrix(H, i, i+l, np.pi/2)
@@ -21,6 +21,7 @@ def greedy_algorithm(H):
             if  E_1 < E:
                 H = H_1
                 E = E_1
+            x+=1
     return H
 
 def givens_rotation_matrix(H, i, j, t):
@@ -42,8 +43,7 @@ def off_diag_frobenius_norm(H):
             x += np.sqrt(H[2*i,2*j]**2 + H[2*i+1,2*j]**2 + H[2*i,2*j+1]**2 + H[2*i+1,2*j+1]**2)
     return 2*x
 
-
-def paardekoper_algorithm(H, tolerance = 1e-10, saved_angles = []):
+def paardekoper_algorithm(H, tolerance = 1e-5, saved_angles = []):
     '''
     Naive strategy
     '''
@@ -53,8 +53,8 @@ def paardekoper_algorithm(H, tolerance = 1e-10, saved_angles = []):
     n_iter = 0
     k = 0
     norm = off_diag_frobenius_norm(H)
-    #angles = np.zeros((2*N,2*N))
     angles = []
+
     while norm > tolerance:
         for j in range(2*N-2,1,-2):
             for i in range(0,j,2):
@@ -99,7 +99,7 @@ def paardekoper_algorithm(H, tolerance = 1e-10, saved_angles = []):
                 H = np.transpose(G) @ H @ G
 
                 norm = off_diag_frobenius_norm(H)
-                n_iter += 1 
+                n_iter += 1
                 k += 4
 
         if not(save_angles) and k > len(saved_angles):
@@ -119,7 +119,7 @@ def optimal_givens_sequence(H):
 
     # Find the O
     eig_vals, O = np.linalg.eigh(np.matmul(H,H))
-    print(f'Determinant of O is {np.linalg.det(O)}')
+    #print(f'Determinant of O is {np.linalg.det(O)}')
 
     t_list = []
 
