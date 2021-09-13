@@ -83,8 +83,10 @@ def sq_ham_matrix_element(H, m1, m2):
                                             mat_elem += x*(-1)**(beta+delta)
                                         elif (l==k!=m1==m2!=i==j) or (l==k!=m1==i!=j==m2) or (l==m1!=k==m2!=i==j) or (l==m1!=k==i!=j==m2):
                                             mat_elem += x*(-1)**(beta+gamma)
-                                        #elif (l==i!=k==j!=m1==m2) or (l==j!=k==i!=m1==m2) or (l==m2!=k==j!=m1==i) or (l==m2!=k==i!=m1==j) or (l==i!=k==m2!=m1==j) or (l==i!=k==m2!=m1==i):
-                                        #    mat_elem += x*(-1)**(alpha+beta)
+                                        elif (l==i!=k==j!=m1==m2) or (l==m2!=k==j!=m1==i) or (l==i!=k==m2!=m1==j):
+                                            mat_elem += -x*(-1)**(alpha+beta)
+                                        elif (l==j!=k==i!=m1==m2) or (l==m2!=k==i!=m1==j) or (l==j!=k==m2!=m1==i):
+                                            mat_elem += x*(-1)**(alpha+beta)
     return -1/4*mat_elem
 
 def ham_average_rotated(theta, H):

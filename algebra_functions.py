@@ -36,6 +36,7 @@ def givens_rotation_matrix(H, i, j, t):
     return G
 
 def off_diag_frobenius_norm(H):
+    """Computes the off-diagonal norm of the matrix H"""
     n = int(len(H)/2)
     x=0
     for i in range(n):
@@ -56,6 +57,7 @@ def paardekoper_algorithm(H, tolerance = 1e-5, saved_angles = []):
     angles = []
 
     while norm > tolerance:
+    #for i in range(1):
         for j in range(2*N-2,1,-2):
             for i in range(0,j,2):
 

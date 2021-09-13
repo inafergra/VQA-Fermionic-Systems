@@ -4,9 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from functools import partial
 np.set_printoptions(precision=2)
-#np.random.seed(seed=1)
+np.random.seed(seed=10)
 
-N = 6
+N = 3
 variational_layer = True
 tolerance = 1e2
 #print(f'{N} fermions')
@@ -33,7 +33,7 @@ if not variational_layer:
     H = greedy_algorithm(H)
     print(f'Off-diagonal norm {off_diag_frobenius_norm(H)}') 
     print(f'Energy {energy(H)}')
-    print(f"Second energy {energy_1(H)}")
+    #print(f"Second energy {energy_1(H)}")
     print(f"Variance {variance(np.zeros(N), H)}")
     print()
 
@@ -48,7 +48,7 @@ if not variational_layer:
 # Variational layer
 else:
 
-    fermion_list = range(3,10)
+    fermion_list = range(3,7)
     ground_energy_error_novar = []
     ground_energy_error_var = []
     variance_novar = []
@@ -56,7 +56,7 @@ else:
 
     for N in fermion_list:
         tolerance = 1e-1
-
+        print(f"{N} fermions")
         print('Initializing matrix, initial state vacuum ...')
         H0 = init_coeff_matrix(N)
         init_norm = off_diag_frobenius_norm(H0)
@@ -94,7 +94,7 @@ else:
             ground_energy = exact_energies[0]
         else:
             ground_energy = exact_energies[1]
-        print(f"Ground energy {ground_energy}")
+        print(f"Ground energy {ground_energy} up to parity")
         print(f"Energy {en}")
         err = 100*np.abs((en-ground_energy)/ground_energy)
         print(f'Ground energy error (%) without variational layer {err}')
@@ -106,7 +106,7 @@ else:
 
         print("Optimizing variational layer")
         vari = partial(variance, H = H)
-        theta0 = np.random.random(N)
+        theta0 = np.zeros(N)
         minimize_dictionary = minimize(vari, x0=theta0,
                                     options={'disp': True},#, 'maxiter': 30},
                                     method = 'Nelder-Mead')
@@ -144,7 +144,7 @@ plt.xlabel("Number of fermions")
 plt.ylabel("Variance")
 plt.show()
 
-"""the more fermions, the greater the tolerance has to be in the first place in order to 
+"""the more fermions, the smaller the tolerance has to be in the first place in order to 
 distinguish the ground/first excited energy (could happen that optimizing the variance the
 system is drived to another unwanted eigenstate)
 """
