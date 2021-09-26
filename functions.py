@@ -5,6 +5,24 @@ from scipy.optimize import minimize, differential_evolution
 #np.set_printoptions(precision=2)
 import pdb; 
 
+def init_coeff_matrix(N, mean=0, variance=1):
+    '''
+    Builds the initial (antisymmetric) matrix of coefficients with elements draw from a normal distribution with mean=mean 
+    variance=6*H_value**2/N**3. The elements of the matrix H are indexed by 4 indices (i,alpha,j,beta) as
+    H_{2*i+alpha,2*j+beta}.
+    '''
+    #variance = 6*H_value**2/N**3
+    #variance = 1
+    H = np.zeros([2*N,2*N])
+    for i in range(N):
+        for j in range(i,N): #H[i,alpha,i,beta] is zero
+            for alpha in range(0,2):
+                for beta in range(0,2):
+                    if (2*i+alpha!=2*j+beta): #diagonal is zero
+                        H[2*i+alpha,2*j+beta] = np.random.normal(mean, variance)
+                        H[2*j+beta,2*i+alpha] = -H[2*i+alpha,2*j+beta]
+    return H
+
 def energy(H):
     '''
     Calculates the energy of a given coupling matrix H. The energy is always taken w.r.t the
@@ -120,25 +138,10 @@ def sq_ham_average_rotated(theta,H):
 def variance(theta, H):
     return np.abs(sq_ham_average_rotated(theta, H) - ham_average_rotated(theta, H)**2)
 
-def init_coeff_matrix(N, mean=0, variance=1):
-    '''
-    Builds the initial (antisymmetric) matrix of coefficients with elements draw from a normal distribution with mean=mean 
-    variance=6*H_value**2/N**3. The elements of the matrix H are indexed by 4 indices (i,alpha,j,beta) as
-    H_{2*i+alpha,2*j+beta}.
-    '''
-    #variance = 6*H_value**2/N**3
-    #variance = 1
-    H = np.zeros([2*N,2*N])
-    for i in range(N):
-        for j in range(i,N): #H[i,alpha,i,beta] is zero
-            for alpha in range(0,2):
-                for beta in range(0,2):
-                    if (2*i+alpha!=2*j+beta): #diagonal is zero
-                        H[2*i+alpha,2*j+beta] = np.random.normal(mean, variance)
-                        H[2*j+beta,2*i+alpha] = -H[2*i+alpha,2*j+beta]
-    return H
+
 
 def appy_h_gate(t,H, indices):
+    
     '''
     Gives the new coupling matrix after applying the h=e^{i*c_{i,alpha}*c_{j,beta}*t} transformation
     for a time t.
