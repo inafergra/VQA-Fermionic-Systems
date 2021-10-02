@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import itertools as itertools
 from scipy.optimize import minimize, differential_evolution
 #np.set_printoptions(precision=2)
-import pdb; 
+import pdb;
 
 def init_syk_tensor(N, J = 1, mean=0, ):
     '''
@@ -33,76 +33,89 @@ def init_TFD_model(N, J, mu):
 #J = init_syk_tensor(5)
 #print(J[1,2,3,4], J[3,4,1,2])
 
+def mat_elem_2maj(alpha,beta):
+    '''
+    Matrix element <Omega|c_{i,alpha}c_{j,alpha}|Omega>
+    '''
+    return 1j**(alpha+beta)*(-1)**(beta)
 
-def energy_inter(H_int):
+def mat_elem_4maj(i, delta, j, gamma, l, alpha, k, beta):
+    '''
+    Matrix element <Omega|c_{i,delta}c_{j,gamma}c_{l,alpha}c_{k.beta}|Omega>
+    '''
+    mat_elem = 1j**(alpha+beta+gamma+delta)
+    if (i==j) and (l==k):
+        mat_elem *= (-1)**(gamma+beta)
+    elif (i==l!=k==j) :
+        mat_elem *= (-1)**(alpha+beta)
+    elif (j==l!=k==i):
+        mat_elem *= (-1)**(alpha+beta)
+    return mat_elem
+
+def mat_element_4maj_exc(m1, m2, i, delta, j, gamma, l, alpha, k, beta):
+    '''
+    Matrix element <1_{m1}|c_{i,delta} c_{j,gamma} c_{l,alpha} c_{k,beta}|1_{m2}>
+    '''
+    mat_elem = 1j**(alpha+beta+gamma+delta)
+    if (l==k==m1==m2==i==j) or  (l==k==m1==j!=i==m2) or (k==m1!=l==i==j==m2) or (k==m1!=l==j!=i==m2):
+        mat_elem *= (-1)**(alpha*delta)
+    elif (l==k==m1==m2!=i==j) or  (l==k==m1==i!=j==m2) or (k==m1!=l==m2!=i==j) or (k==m1!=l==i!=j==m2):
+        mat_elem *= (-1)**(alpha+gamma)
+    elif (l==k!=m1==m2==i==j) or  (l==k!=m1==j!=i==m2) or (l==m1!=k==i==j==m2) or (l==m1!=k==j!=i==m2):
+        mat_elem *= (-1)**(beta+delta)
+    elif (l==k!=m1==m2!=i==j) or (l==k!=m1==i!=j==m2) or (l==m1!=k==m2!=i==j) or (l==m1!=k==i!=j==m2):
+        mat_elem *= (-1)**(beta+gamma)
+    elif (l==i!=k==j!=m1==m2) or (l==m2!=k==j!=m1==i) or (l==i!=k==m2!=m1==j):
+        mat_elem *= (-1)**(alpha+beta)
+    elif (l==j!=k==i!=m1==m2) or (l==m2!=k==i!=m1==j) or (l==j!=k==m2!=m1==i):
+        mat_elem *= (-1)**(alpha+beta)
+    return mat_elem
+
+def syk_energy(J):
+    '''
+    Returns the energy of the independent SYK models w.r.t. the |phi> state
+    '''
+    N = int(np.size(J,axis=0)/2)
+    energy = 0
+    for i in range(N):
+        for j in range(N):
+            for a in range(N):
+                for b in range(N):
+                    for c in range(N):
+                        for d in range(N):
+                            for alpha_i in range(2):
+                                for alpha_j in range(2):
+                                    for alpha_a in range(2):
+                                        for alpha_b in range(2):
+                                            for alpha_c in range(2):
+                                                for alpha_d in range(2):
+                                                    energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
+                                                    ( -1j**(alpha_i+alpha_j)*(-1)**(alpha_i+alpha_j)*mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) \
+                                                    + mat_elem_2maj(alpha_i,alpha_j) * \
+                                                    mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )               
+    return (1/(4*N))*energy
+
+def interaction_energy(H_int):
     '''
     Calculates the interaction energy of the TFD Hamiltonian. The energy is taken w.r.t to 
     the |phi> state. 
     '''
-    N = int(np.size(H,axis=0)/2)
+    N = int(np.size(H_int,axis=0)/2)
     energy = 0
     for a in range(N):
             for b in range(N):
                 for i in range(N):
                         for j in range(N): 
-                            for l in range(N):
-                                for k in range(N):
-                                    for alpha_i in range(2):
-                                        for alpha_j in range(2):
-                                            for alpha_k in range(2):
-                                                    for alpha_l in range(2): 
-                                                        for alpha_a in range(2):
-                                                            for alpha_b in range(2):
-                                                                energy += H[2*a+alpha_a,2*b+alpha_b] * (1j**(alpha_j + alpha_k)*(-1)**(alpha_b + alpha_k) + 1j**(alpha_i + alpha_l)*(-1)**(alpha_a + alpha_l))
-    return energy
-
-
-def mat_elem_syk(J, m1, m2):
-    """
-    Returns the energy of the independent SYK models w.r.t. the |phi> state
-    """
-    N = int(np.size(H,axis=0)/2)
-    mat_elem = 0
-    for i in range(N):
-            for j in range(N):
-                for l in range(N):
-                    for k in range(N):
-                        for alpha in range(0,2):
-                            for beta in range(0,2):
-                                for gamma in range(0,2):
-                                    for delta in range(0,2):
-                                        x = J[2*l+alpha, 2*k+beta, 2*i+delta, 2*j+gamma] * 1j**(alpha+beta+gamma+delta)
-                                        if (l==k==m1==m2==i==j) or  (l==k==m1==j!=i==m2) or (k==m1!=l==i==j==m2) or (k==m1!=l==j!=i==m2):
-                                            mat_elem += x*(-1)**(alpha*delta)
-                                        elif (l==k==m1==m2!=i==j) or  (l==k==m1==i!=j==m2) or (k==m1!=l==m2!=i==j) or (k==m1!=l==i!=j==m2):
-                                            mat_elem += x*(-1)**(alpha+gamma)
-                                        elif (l==k!=m1==m2==i==j) or  (l==k!=m1==j!=i==m2) or (l==m1!=k==i==j==m2) or (l==m1!=k==j!=i==m2):
-                                            mat_elem += x*(-1)**(beta+delta)
-                                        elif (l==k!=m1==m2!=i==j) or (l==k!=m1==i!=j==m2) or (l==m1!=k==m2!=i==j) or (l==m1!=k==i!=j==m2):
-                                            mat_elem += x*(-1)**(beta+gamma)
-                                        elif (l==i!=k==j!=m1==m2) or (l==m2!=k==j!=m1==i) or (l==i!=k==m2!=m1==j):
-                                            mat_elem += -x*(-1)**(alpha+beta)
-                                        elif (l==j!=k==i!=m1==m2) or (l==m2!=k==i!=m1==j) or (l==j!=k==m2!=m1==i):
-                                            mat_elem += x*(-1)**(alpha+beta)
-    return mat_elem
-
-
-def energy_syk(J):
-    '''
-    Computes the energy TO THE FIRST ORDER of the state given by doing an X rotation of theta[i] in qubit i. 
-    args:
-        theta: 1darray (len = number of fermions/qubits N)
-    '''
-    N = int(np.size(H,axis=0)/2)
-    e = 0
-    for m1 in range(N):
-        for m2 in range(N):
-            e += theta[m1]*theta[m2]*ham_matrix_element(H, m1, m2)
-    #print(e)
-    return energy(H) + e
+                            for alpha_i in range(2):
+                                for alpha_j in range(2):
+                                        for alpha_a in range(2):
+                                            for alpha_b in range(2):
+                                                #energy += H_int[2*a+alpha_a,2*b+alpha_b] * 1j**(alpha_a + alpha_b + alpha_i + alpha_j) * ((-1)**(alpha_b + alpha_j) + (-1)**(alpha_a + alpha_j))
+                                                energy += H_int[2*a+alpha_a,2*b+alpha_b] * (mat_elem_2maj(alpha_a,alpha_j)*mat_elem_2maj(alpha_i,alpha_b) + mat_elem_2maj(alpha_i,alpha_a)*mat_elem_2maj(alpha_b,alpha_j))    
+    return (1/(4*N))*energy
 
 def tfd_energy(J_L, J_R, H_int):
-    return (syk_energy(J_R) + syk_energy(J_L) + inter_energy(H_int))
+    return  interaction_energy(H_int)#(syk_energy(J_R) + syk_energy(J_L) + interaction_energy(H_int))
 
 def apply_unitary(J_L, J_R, H_int, t, subsystem, indices):
     '''
@@ -122,8 +135,6 @@ def apply_unitary(J_L, J_R, H_int, t, subsystem, indices):
     exp_A = I + np.sin(2*t)*A/2 - (np.cos(2*t)-1)*A2/4
     exp_A_T = I - np.sin(2*t)*A/2 - (np.cos(2*t)-1)*A2/4
 
-    print(len(A))
-    print(len(exp_A))
     if subsystem == 'R':
         #Compute new interaction matrix of coefficients
         H_int = np.matmul(H_int,exp_A)
@@ -143,3 +154,11 @@ def apply_unitary(J_L, J_R, H_int, t, subsystem, indices):
 
     return J_L, J_R, H_int
 
+def new_tfd_energy(t, indices, subsystem, J_L, J_R, H_int):
+    '''
+    Function to input in the minimization loop. Computes the energy of the coupling matrices after 
+    going through the transformation h[indices] for a time t.
+    '''
+    J_L, J_R, H_int = apply_unitary(J_L, J_R, H_int, t, subsystem, indices)
+    new_energy = tfd_energy(J_L, J_R, H_int)
+    return new_energy

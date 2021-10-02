@@ -10,16 +10,17 @@ np.random.seed(seed=3)
 N = 5
 
 #------------------Initial state
-J_L, J_R, H_int = init_TFD_model(2, 1, 0.1)
+J_L, J_R, H_int = init_TFD_model(5, 1, 0.1)
 
 init_energy = tfd_energy(J_L, J_R, H_int)
 print(f'Initial energy is {init_energy}')
 
-J_L, J_R, H_int = apply_unitary(J_L, J_R, H_int, 1, 'L', (1,0,1,1))
+J_L, J_R, H_int = apply_unitary(J_L, J_R, H_int, 1.2, 'L', (1,0,1,1))
 
+print(f'Next energy is {init_energy}')
 
 energy_list = []
-num_gates = 3000
+num_gates = 10
 
 for k in range(num_gates):
     # -------------------------------Draw random i,alpha,j,beta---------------------
@@ -31,16 +32,17 @@ for k in range(num_gates):
     
     #----------------------------------------Optimizing the time---------------------
     t0=np.random.rand() #initial guess
-    minimize_dictionary = minimize(new_energy, x0=t0,args=(new_H_num,indices), options={'disp': False}, method = 'Nelder-Mead')
+    subsystem = 'R'
+    minimize_dictionary = minimize(new_tfd_energy, x0=t0,args=(indices, subsystem, J_L, J_R, H_int), options={'disp': False}, method = 'Nelder-Mead')
     #minimize_dictionary = differential_evolution(new_energy,args=(new_H,indices), bounds=[(0,2)], disp = False)#, maxiter=10000)
 
-    optimal_time_num = minimize_dictionary['x'][0]
-    #print(f'Optimal time num: {optimal_time_num}')
+    optimal_time = minimize_dictionary['x'][0]
+    #print(f'Optimal time num: {optimal_time}')
 
     #--------------------------------------Computing energy after h---------------------
-    new_H_num = appy_h_gate(optimal_time_num,new_H_num, indices)
-    final_energy_num = energy(new_H_num)
-    energy_list_num.append(final_energy_num)
+    J_L, J_R, H_int = apply_unitary(J_L, J_R, H_int, optimal_time, 'R', indices)
+    final_energy = tfd_energy(J_L, J_R, H_int)
+    energy_list.append(final_energy)
     #print(energy_list)
 
 #num_gates = len(energy_list)
@@ -48,7 +50,7 @@ for k in range(num_gates):
 #exact_energies = exact_energy_levels(H,2)
 #theta = np.zeros(N)
 #print(f'Exact ground energy: {exact_energies[0]}')
-print(f'Numerical energy is {final_energy_num}')
+print(f'Numerical energy is {final_energy}')
 
 plt.plot(energy_list_num, label = 'Algorithmic cooling numeric')
 #plt.plot(energy_list_eq, label = 'Algorithmic cooling exact')

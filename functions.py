@@ -34,12 +34,9 @@ def energy(H):
         energy -= H[2*l+1,2*l]
     return energy
 
-
-
 def squared_hamiltonian_average(H):
     ''' Calculates the average of the squared hamiltonian with respect to the vacuum '''
     N = int(np.size(H,axis=0)/2)
-
     mat_elem = 0
     for i in range(N):
         for j in range(N):
@@ -75,7 +72,6 @@ def ham_matrix_element(H, m1, m2):
                     elif (l == k != m1 == m2) or (l== m1 != m2 == k):
                         mat_elem += x*(-1)**beta
     return 0.5*1j*mat_elem
-    
 
 def sq_ham_matrix_element(H, m1, m2):
     '''
@@ -90,8 +86,8 @@ def sq_ham_matrix_element(H, m1, m2):
                     for k in range(N):
                         for alpha in range(0,2):
                             for beta in range(0,2):
-                                for gamma in range(0,2):
-                                    for delta in range(0,2):
+                                for delta in range(0,2):
+                                    for gamma in range(0,2):
                                         x =  H[2*l+alpha, 2*k+beta]*H[2*i+delta, 2*j+gamma] * 1j**(alpha+beta+gamma+delta)
                                         if (l==k==m1==m2==i==j) or  (l==k==m1==j!=i==m2) or (k==m1!=l==i==j==m2) or (k==m1!=l==j!=i==m2):
                                             mat_elem += x*(-1)**(alpha*delta)
