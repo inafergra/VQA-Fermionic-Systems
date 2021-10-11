@@ -10,12 +10,13 @@ np.random.seed(seed=3)
 N = 5
 
 #------------------Initial state
-J_L, J_R, H_int = init_TFD_model(5, 1, 0.1)
+print('Initializing tensor')
+J_L, J_R, H_int = init_TFD_model(N, 1, 0.1)
 
 init_energy = tfd_energy(J_L, J_R, H_int)
 print(f'Initial energy is {init_energy}')
 
-J_L, J_R, H_int = apply_unitary(J_L, J_R, H_int, 1.2, 'L', (1,0,1,1))
+J_L, J_R, H_int = apply_unitary(J_L, J_R, H_int, 1.2, 'L', (1,1,0,0))
 
 print(f'Next energy is {init_energy}')
 
@@ -45,15 +46,10 @@ for k in range(num_gates):
     energy_list.append(final_energy)
     #print(energy_list)
 
-#num_gates = len(energy_list)
-#print(new_H_num)
-#exact_energies = exact_energy_levels(H,2)
-#theta = np.zeros(N)
-#print(f'Exact ground energy: {exact_energies[0]}')
+
 print(f'Numerical energy is {final_energy}')
 
 plt.plot(energy_list_num, label = 'Algorithmic cooling numeric')
-#plt.plot(energy_list_eq, label = 'Algorithmic cooling exact')
 
 #--------------------plotting the exact energies
 #for i in range(len(exact_energies)): 

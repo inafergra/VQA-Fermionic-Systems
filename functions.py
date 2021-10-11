@@ -5,6 +5,7 @@ from scipy.optimize import minimize, differential_evolution
 #np.set_printoptions(precision=2)
 import pdb; 
 
+
 def init_coeff_matrix(N, mean=0, variance=1):
     '''
     Builds the initial (antisymmetric) matrix of coefficients with elements draw from a normal distribution with mean=mean 
@@ -133,8 +134,6 @@ def sq_ham_average_rotated(theta,H):
 
 def variance(theta, H):
     return np.abs(sq_ham_average_rotated(theta, H) - ham_average_rotated(theta, H)**2)
-
-
 
 def appy_h_gate(t,H, indices):
     

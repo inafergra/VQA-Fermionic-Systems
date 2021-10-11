@@ -6,7 +6,7 @@ from functools import partial
 np.set_printoptions(precision=2)
 np.random.seed(seed=10)
 
-N = 3
+N = 2
 variational_layer = True
 tolerance = 1e2
 #print(f'{N} fermions')
