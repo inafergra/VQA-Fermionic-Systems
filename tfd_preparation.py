@@ -1,64 +1,81 @@
-from syk_functions import *
-from algebra_functions import *
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize, differential_evolution
 np.set_printoptions(precision=2)
-np.random.seed(seed=3)
 
-#------------------Number of fermions
-N = 5
+from syk_functions import *
+from exact_diagonalization_TFD import *
 
-#------------------Initial state
-print('Initializing tensor')
-J_L, J_R, H_int = init_TFD_model(N, 1, 0.1)
+from scipy.optimize import minimize, differential_evolution
 
-init_energy = tfd_energy(J_L, J_R, H_int)
-print(f'Initial energy is {init_energy}')
+import cirq
+from openfermion.ops import MajoranaOperator
+from openfermion.transforms import jordan_wigner
+from openfermion.linalg import get_sparse_operator
 
-J_L, J_R, H_int = apply_unitary(J_L, J_R, H_int, 1.2, 'L', (1,1,0,0))
+from itertools import combinations
 
-print(f'Next energy is {init_energy}')
+def tfd_algor_cooling(N, num_gates, J, mu, seed = np.random.randint):
+    '''
+    Runs algorithmic cooling for the TFD Hamiltonian with N fermions
+    '''
+    np.random.seed(seed=seed)
 
-energy_list = []
-num_gates = 10
+    print('Initializing tensor')
+    TFD_model, TFD_dict = init_TFD_model(N, J, mu)
 
-for k in range(num_gates):
-    # -------------------------------Draw random i,alpha,j,beta---------------------
-    i=0;j=0;alpha=0;beta=0
-    while (i==j) and (alpha==beta):
-        i = np.random.randint(0,N) ; j = np.random.randint(0,N)
-        alpha = np.random.randint(0,2) ; beta = np.random.randint(0,1)
-    indices = [i,alpha,j,beta]
-    
-    #----------------------------------------Optimizing the time---------------------
-    t0=np.random.rand() #initial guess
-    subsystem = 'R'
-    minimize_dictionary = minimize(new_tfd_energy, x0=t0,args=(indices, subsystem, J_L, J_R, H_int), options={'disp': False}, method = 'Nelder-Mead')
-    #minimize_dictionary = differential_evolution(new_energy,args=(new_H,indices), bounds=[(0,2)], disp = False)#, maxiter=10000)
+    init_energy = tfd_energy(TFD_model)
+    print(f'Initial energy is {init_energy}')
 
-    optimal_time = minimize_dictionary['x'][0]
-    #print(f'Optimal time num: {optimal_time}')
+    print(tfd_exact(N, TFD_dict))
 
-    #--------------------------------------Computing energy after h---------------------
-    J_L, J_R, H_int = apply_unitary(J_L, J_R, H_int, optimal_time, 'R', indices)
-    final_energy = tfd_energy(J_L, J_R, H_int)
-    energy_list.append(final_energy)
-    #print(energy_list)
+    energy_list = []
 
+    for k in range(num_gates):
 
-print(f'Numerical energy is {final_energy}')
+        # Draw random i,alpha,j,beta
+        print('Gate ', k)
+        i=0;j=0;alpha=0;beta=0
+        while (i==j):
+            i = np.random.randint(0,N) ; j = np.random.randint(0,N)
+            alpha = np.random.randint(0,2) ; beta = np.random.randint(0,1)
+        indices = [i,alpha,j,beta]
+        
+        # Optimizing the time (for one of the sides)
+        t0=np.random.rand() #initial guess
+        subsystem = 'R'
+        minimize_dictionary = minimize(new_tfd_energy, x0=t0,args=(indices, subsystem, TFD_model), options={'disp': True}, method = 'Nelder-Mead')
+        #minimize_dictionary = differential_evolution(new_tfd_energy,args=(indices, subsystem, J_L, J_R, H_int), bounds=[(0,2)], disp = False)#, maxiter=10000)
+        optimal_time_R = minimize_dictionary['x'][0]
+        print(f'Optimal time for R num: {optimal_time_R}')
 
-plt.plot(energy_list_num, label = 'Algorithmic cooling numeric')
+        # Computing energy after right unitary
+        TFD_model = apply_unitary(TFD_model, optimal_time_R, 'R', indices)
+        left_energy = tfd_energy(TFD_model)
+        print('Energy after right unitary', left_energy)
+        energy_list.append(left_energy)
 
-#--------------------plotting the exact energies
-#for i in range(len(exact_energies)): 
-#plt.axhline(y=exact_energies[i], linestyle='-', label = f'Energy level {i}')
-plt.axhline(y=exact_energies[0], color =  'r', linestyle='--', label = f'Energy level 0')
-plt.axhline(y=exact_energies[1], color =  'y', linestyle='--', label = f'Energy level 1')
+        # Optimizing time for the other side
+        subsystem = 'L'
+        minimize_dictionary = minimize(new_tfd_energy, x0=t0,args=(indices, subsystem, TFD_model), options={'disp': True}, method = 'Nelder-Mead')
+        #minimize_dictionary = differential_evolution(new_tfd_energy,args=(indices, subsystem, J_L, J_R, H_int), bounds=[(0,2)], disp = False)#, maxiter=10000)
+        optimal_time_L = minimize_dictionary['x'][0]
+        print(f'Optimal time for L num: {optimal_time_L}')
 
-plt.xlabel('Number of unitaries')
-plt.ylabel('Energy')
-plt.legend()
-#plt.savefig(f'Plots/N={N}, p={len(energy_list)}')
-plt.show()
+        # Computing energy after left unitary
+        TFD_model = apply_unitary(TFD_model, optimal_time_L, 'L', indices)
+        right_energy = tfd_energy(TFD_model)
+        print('Energy after left unitary', right_energy)
+        energy_list.append(right_energy)
+        #print(energy_list)
+
+    print(f'Numerical energy is {right_energy}')
+
+    plt.plot(energy_list, label = 'Algorithmic cooling')
+    #plt.axhline(y=exact_energies[0], color =  'r', linestyle='--', label = f'Energy level 0')
+    #plt.axhline(y=exact_energies[1], color =  'y', linestyle='--', label = f'Energy level 1')
+    plt.xlabel('Number of unitaries')
+    plt.ylabel('Energy')
+    plt.legend()
+    #plt.savefig(f'Plots_SYK/N={N}, number of gates={len(energy_list)}')
+    plt.show()
+
