@@ -2,22 +2,22 @@ from math import factorial
 from tfd_preparation import * 
 from syk_functions import * 
 
-N = 3 # N fermions, 2N Majoranas
+N = 4 # N fermions, 2N Majoranas
 num_gates = 500 #number of left-right blocks
-J = 1/(16) # divide by comb(2N,4)
+J = 1 # divide by comb(2N,4)
 mu = 0
 seed = 19
 independent_optimization = False
 save = True
 
-tfd_algor_cooling(N, num_gates, J, mu, seed = seed, independent_optimization=independent_optimization, save=save)
+#tfd_algor_cooling(N, num_gates, J, mu, seed = seed, independent_optimization=independent_optimization, save=save)
       
-energy_list = np.load(f'Data/tfd_cooling_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy')
-exact_energies = np.load(f'Data/tfd_exact_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy')
+energy_list = np.load(f'TFD/Data/tfd_cooling_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy')
+exact_energies = np.load(f'TFD/Data/tfd_exact_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy')
 
 print(exact_energies)
-plt.plot(energy_list, label = 'Algorithmic cooling')
-for i in range(7):
+plt.plot(energy_list[:200], '.', label = 'Algorithmic cooling')
+for i in range(2):
     plt.axhline(y=exact_energies[i], linestyle='--', label = f'Energy level {i}')
 #plt.axhline(y=exact_energies[1], color =  'y', linestyle='--', label = f'Energy level 1')
 #plt.axhline(y=exact_energies[2], color =  'y', linestyle='--', label = f'Energy level 2')

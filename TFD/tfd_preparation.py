@@ -7,11 +7,6 @@ from exact_diagonalization_TFD import *
 
 from scipy.optimize import minimize, differential_evolution
 
-import cirq
-from openfermion.ops import MajoranaOperator
-from openfermion.transforms import jordan_wigner
-from openfermion.linalg import get_sparse_operator
-
 from itertools import combinations
 
 def tfd_algor_cooling(N, num_gates, J, mu, seed = np.random.randint, independent_optimization = False, save = True):
@@ -102,6 +97,6 @@ def tfd_algor_cooling(N, num_gates, J, mu, seed = np.random.randint, independent
         #eig = tfd_exact(N, TFD_model, TFD_dict[2])
         #print(eig)
         if save == True:
-            np.save(f'Data/tfd_cooling_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy',np.array(energy_list[1:]))
-            np.save(f'Data/tfd_exact_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy',np.array(eig))
+            np.save(f'TFD/Data/tfd_cooling_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy',np.array(energy_list[1:]))
+            np.save(f'TFD/Data/tfd_exact_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy',np.array(eig))
         print('Number of times it went up: ', flag)

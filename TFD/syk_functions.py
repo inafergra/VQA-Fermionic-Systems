@@ -22,7 +22,7 @@ def init_syk_tensor(J_dict, N):
         b = ind[1]
         c = ind[2]
         d = ind[3]
-        #print(ind)
+
         J[a,b,c,d] = J_dict[ind]
 
         J[b,c,d,a] = -J[a,b,c,d]
@@ -83,10 +83,6 @@ def init_TFD_model(N, J, mu):
     # tensors
     J_L = init_syk_tensor(J_L_dict,N)
     J_R = J_L
-    #H_int = np.zeros((4*N,4*N))
-    #for a in range(2*N):
-    #    H_int[a, a+2*N] = mu
-    #    H_int[a+2*N, a] = -mu
     H_int = mu * np.identity(2*N)
 
     tensor_list = [J_L, J_R, H_int]
@@ -100,33 +96,35 @@ def syk_energy(J):
     '''
     N = int(np.size(J,axis=0)/2)
     energy = 0
-    for i in range(N):
-        for j in range(N):
+    #for i in range(N):
+        #for j in range(N):
             #for alpha_i in range(2):
                 #for alpha_j in range(2):
-            for a in range(N):
-                for b in range(N):
-                    for c in range(N):
-                        for d in range(N):
-                            for alpha_a in range(2):
-                                for alpha_b in range(2):
-                                    for alpha_c in range(2):
-                                        for alpha_d in range(2):
-                                            #energy +=  J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
-                                            #    ( mat_element_6maj(i,alpha_i,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d,j,alpha_j) \
-                                            #    + mat_elem_2maj(i,alpha_i,j,alpha_j) * mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
-                                            #print(alpha_a,alpha_b,alpha_c,alpha_d)
-                                            
-                                            energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
-                                            ( mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) \
-                                            + kdf(i,j) * mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
-                                            
-                                            #energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
-                                            #( (1j)**(alpha_j+alpha_i)*(-1)**(alpha_j)* \
-                                            #mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) \
-                                            #+ mat_elem_2maj(i, alpha_i,j, alpha_j) * \
-                                            #mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
-    return energy/(2*N)
+    for a in range(N):
+        for b in range(N):
+            for c in range(N):
+                for d in range(N):
+                    for alpha_a in range(2):
+                        for alpha_b in range(2):
+                            for alpha_c in range(2):
+                                for alpha_d in range(2):
+                                    #energy +=  J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
+                                    #    ( mat_element_6maj(i,alpha_i,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d,j,alpha_j) \
+                                    #    + mat_elem_2maj(i,alpha_i,j,alpha_j) * mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
+                                    #print(alpha_a,alpha_b,alpha_c,alpha_d)
+                                    
+                                    #energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
+                                    #( mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) \
+                                    #+ kdf(i,j) * mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
+                                    
+                                    energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * mat_elem_4maj(a, alpha_a, b, alpha_b, c, alpha_c, d, alpha_d)
+
+                                    #energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
+                                    #( (1j)**(alpha_j+alpha_i)*(-1)**(alpha_j)* \
+                                    #mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) \
+                                    #+ mat_elem_2maj(i, alpha_i,j, alpha_j) * \
+                                    #mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
+    return energy
 
 """
 def syk_energy(J):
