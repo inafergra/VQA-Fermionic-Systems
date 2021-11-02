@@ -58,143 +58,100 @@ def init_syk_tensor(J_dict, N):
         J[b,d,c,a] = J[a,b,c,d]
         J[d,c,a,b] = -J[a,b,c,d]
         J[c,a,b,d] = J[a,b,c,d]
-
     return J
 
 
-def init_TFD_model(N, J, mu):
+def init_TFD_model(N, J):
     '''
     '''
-    L_indices = range(0, 2*N)
-    R_indices = range(2*N, 4*N)
-    syk_L_indices = list(combinations(L_indices, 4))
-    syk_R_indices = list(combinations(R_indices, 4))
-    interaction_indices = [(l, r) for l, r in zip(L_indices, R_indices)]
+    syk_L_indices = list(combinations(range(0, 2*N), 4))
 
-    # dictionaries with the couplings
+    # dictionary
     var = 6*J**2/N**3
     couplings = np.random.normal(scale=np.sqrt(var), size=len(syk_L_indices))
-    print(couplings)
-    print()
-    J_L_dict = {ind:couplings[i] for ind,i in zip(syk_L_indices,range(len(couplings)))}
-    J_R_dict = {ind:couplings[i] for ind,i in zip(syk_R_indices,range(len(couplings)))}
-    H_int_dict = {ind: 1j * mu for ind in interaction_indices}
+    J_dict = {ind:couplings[i] for ind,i in zip(syk_L_indices,range(len(couplings)))}
 
-    # tensors
-    J_L = init_syk_tensor(J_L_dict,N)
-    J_R = J_L
-    #H_int = np.zeros((4*N,4*N))
-    #for a in range(2*N):
-    #    H_int[a, a+2*N] = mu
-    #    H_int[a+2*N, a] = -mu
-    H_int = mu * np.identity(2*N)
+    # tensor
+    J = init_syk_tensor(J_dict,N)
 
-    tensor_list = [J_L, J_R, H_int]
-    dict_list = [J_L_dict,J_R_dict,H_int_dict]
+    return J, J_dict
 
-    return tensor_list, dict_list
-
+def syk_energy(J):
+    '''
+    Returns the energy of the independent SYK models w.r.t. the vacuum
+    '''
+    
+    N = int(np.size(J,axis=0)/2)
+    energy = 0
+    for a in range(N):
+        for b in range(N):
+            for c in range(N):
+                for d in range(N):
+                    for alpha_a in range(2):
+                        for alpha_b in range(2):
+                            for alpha_c in range(2):
+                                for alpha_d in range(2):
+                                    #for alpha_i in range(2):
+                                    #    for alpha_j in range(2):
+                                    #print(alpha_a,alpha_b,alpha_c,alpha_d)
+                                    #i = -1
+                                    #j = -1
+                                    #energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * mat_element_4maj_exc(i,j,a, alpha_a, b, alpha_b, c, alpha_c, d, alpha_d)
+                                    energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * mat_elem_4maj(a, alpha_a, b, alpha_b, c, alpha_c, d, alpha_d)
+    #print(energy)
+    return energy
+"""
 
 def syk_energy(J):
     '''
     Returns the energy of the independent SYK models w.r.t. the |phi> state
     '''
-    
     N = int(np.size(J,axis=0)/2)
     energy = 0
     for i in range(N):
         for j in range(N):
-            for alpha_i in range(2):
-                for alpha_j in range(2):
-
-                    for a in range(N):
-                        for b in range(N):
-                            for c in range(N):
-                                for d in range(N):
-                                    for alpha_a in range(2):
-                                        for alpha_b in range(2):
-                                            for alpha_c in range(2):
-                                                for alpha_d in range(2):
-                                                    #print(alpha_a,alpha_b,alpha_c,alpha_d)
-                                                    energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
-                                                    ( (1j)**(alpha_j+alpha_i)*(-1)**(alpha_j)* \
-                                                    mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) \
-                                                    + mat_elem_2maj(i, alpha_i,j, alpha_j) * \
-                                                    mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
-    '''
-    N = int(np.size(J,axis=0)/2)
-    energy = 0
-    for i in range(N):
-        for j in range(N):
-            for alpha_i in range(2):
-                for alpha_j in range(2):
-                    for ind in list(combinations(range(2*N),4)):
-                        alpha_a = ind[0]%2
-                        alpha_b = ind[1]%2
-                        alpha_c = ind[2]%2
-                        alpha_d = ind[3]%2
-                        a = int((ind[0]-alpha_a)/2 )
-                        b = int((ind[1]-alpha_b)/2 )
-                        c = int((ind[2]-alpha_c)/2 )
-                        d = int((ind[3]-alpha_d)/2 )
-                        
-                        #print(2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d)
-                        #print(a,b,c,d)
-                        #print(alpha_a,alpha_b,alpha_c,alpha_d)
-                        energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
-                        ( (1j)**(alpha_j+alpha_i)*(-1)**(alpha_j)* \
-                        mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) \
-                        + mat_elem_2maj(i, alpha_i,j, alpha_j) * \
-                        mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
-    '''
+            #for alpha_i in range(2):
+            #    for alpha_j in range(2):
+            for a in range(N):
+                for b in range(N):
+                    for c in range(N):
+                        for d in range(N):
+                            for alpha_a in range(2):
+                                for alpha_b in range(2):
+                                    for alpha_c in range(2):
+                                        for alpha_d in range(2):
+                                            #energy +=  J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
+                                            #    ( mat_element_6maj(i,alpha_i,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d,j,alpha_j) \
+                                            #    + mat_elem_2maj(i,alpha_i,j,alpha_j) * mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
+                                            #print(alpha_a,alpha_b,alpha_c,alpha_d)
+                                            
+                                            energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
+                                            mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d)
+                                            #( mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) \
+                                            #+ kdf(i,j) * mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
+                                            
+                                            #energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * \
+                                            #( (1j)**(alpha_j+alpha_i)*(-1)**(alpha_j)* \
+                                            #mat_element_4maj_exc(i,j,a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) \
+                                            #+ mat_elem_2maj(i, alpha_i,j, alpha_j) * \
+                                            #mat_elem_4maj(a,alpha_a,b,alpha_b,c,alpha_c,d,alpha_d) )
     #print(energy)
-    return (1/(4*N))*energy
+    return energy/(N)
+"""
 
-def interaction_energy(H_int):
-    '''
-    Calculates the interaction energy of the TFD Hamiltonian. The energy is taken w.r.t to 
-    the |phi> state. 
-    '''
-    N = int(np.size(H_int,axis=0)/4)
-    energy = 0
-    #print(H_int)
-    for a in range(N):
-        for b in range(N):
-            for i in range(N):
-                for j in range(N): 
-                    for alpha_a in range(2):
-                        for alpha_b in range(2):
-                            #print(2*a+alpha_a)
-                            for alpha_i in range(2):
-                                for alpha_j in range(2):
-                                    
-                                    energy += H_int[2*a+alpha_a,2*b+alpha_b] * 1j**(alpha_a + alpha_b + alpha_i + alpha_j) * ((-1)**(alpha_b + alpha_j) + (-1)**(alpha_a + alpha_j))
-                                    #energy += H_int[2*a+alpha_a,2*b+alpha_b] * (mat_elem_2maj(a,alpha_a,j,alpha_j)*mat_elem_2maj(i,alpha_i,b,alpha_b) + mat_elem_2maj(i,alpha_i,a,alpha_a)*mat_elem_2maj(b,alpha_b,j,alpha_j))    
-    return (1/(4*N))*energy
-
-
-
-def tfd_energy(TFD_model):
-    J_L = TFD_model[0]
-    J_R = TFD_model[1]
-    H_int= TFD_model[2]
-
-    #print('Right energy', syk_energy(J_R))
-    #print('Left energy',syk_energy(J_L))
-    #print('Interaction energy',interaction_energy(H_int))
-
+def tfd_energy(J):
+    
+    #print('Energy', syk_energy(J))
+    
     # Have to cast to real because there is a small imaginary part not cancelling from numerical imprecisions
-    return np.real(syk_energy(J_R) + syk_energy(J_L) + interaction_energy(H_int))
+    return np.real(syk_energy(J))
 
-def apply_unitary(TFD_model, t, subsystem, indices):
+def apply_unitary(J, t, indices):
     '''
     Calculates the new matrix of coefficients of the interaction term after applying a left h.
     '''
-    J_L = TFD_model[0]
-    J_R = TFD_model[1]
-    H_int= TFD_model[2]
-
-    N = int(np.size(J_L,axis=0)/2)
+    
+    N = int(np.size(J,axis=0)/2)
     i = indices[0] ; alpha = indices[1]; j = indices[2]; beta = indices[3]
 
     #Compute the A matrix
@@ -206,32 +163,18 @@ def apply_unitary(TFD_model, t, subsystem, indices):
     I = np.identity(2*N)
     A2 = np.matmul(A,A)
     exp_A = I + np.sin(2*t)*A/2 - (np.cos(2*t)-1)*A2/4
-    exp_A_T = I - np.sin(2*t)*A/2 - (np.cos(2*t)-1)*A2/4
+    #exp_A_T = I - np.sin(2*t)*A/2 - (np.cos(2*t)-1)*A2/4
 
-    if subsystem == 'R':
-        #Compute new interaction matrix of coefficients
-        #H_int_ = np.matmul(H_int,exp_A)
-        H_int = np.einsum('ij,jk->ik', H_int, exp_A)
+    #Compute new matrix 
+    J = np.einsum('ijkl, mi, nj, ok, pl->mnop', J, exp_A, exp_A, exp_A, exp_A)
 
-        #Compute new matrix for the R system
-        J_R = np.einsum('ijkl, mi, nj, ok, pl->mnop', J_R, exp_A, exp_A, exp_A, exp_A)
+    return J
 
-    elif subsystem == 'L':
-        #Compute new interaction matrix of coefficients
-        #H_int_ = exp_A_T @ H_int 
-        H_int = np.einsum('ij,ik->jk', H_int, exp_A)
-
-        #Compute new matrix for the L system
-        J_L = np.einsum('ijkl, mi, nj, ok, pl->mnop', J_L, exp_A, exp_A, exp_A, exp_A)
-    #print(np.imag(H_int))
-    TFD_model = [J_L, J_R, H_int]
-    return TFD_model
-
-def new_tfd_energy(t, indices, subsystem, TFD_model):
+def new_tfd_energy(t, indices, J):
     '''
     Function to input in the minimization loop. Computes the energy of the coupling matrices after 
     going through the transformation h[indices] for a time t.
     '''
-    TFD_model = apply_unitary(TFD_model, t, subsystem, indices)
-    new_energy = tfd_energy(TFD_model)
+    J = apply_unitary(J, t, indices)
+    new_energy = tfd_energy(J)
     return new_energy

@@ -1,15 +1,16 @@
+from math import factorial
 from tfd_preparation import * 
 from syk_functions import * 
 
 N = 3 # N fermions, 2N Majoranas
 num_gates = 500 #number of left-right blocks
-J = 1
+J = 1/(16) # divide by comb(2N,4)
 mu = 0
-seed = 99
+seed = 19
 independent_optimization = False
 save = True
 
-#tfd_algor_cooling(N, num_gates, J, mu, seed = seed, independent_optimization=independent_optimization, save=save)
+tfd_algor_cooling(N, num_gates, J, mu, seed = seed, independent_optimization=independent_optimization, save=save)
       
 energy_list = np.load(f'Data/tfd_cooling_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy')
 exact_energies = np.load(f'Data/tfd_exact_indep{independent_optimization}_N{N}_J{J}_mu{mu}_seed{seed}_numgates{num_gates}.npy')

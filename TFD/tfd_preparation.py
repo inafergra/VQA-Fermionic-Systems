@@ -29,7 +29,7 @@ def tfd_algor_cooling(N, num_gates, J, mu, seed = np.random.randint, independent
     eig =tfd_exact(N, TFD_model, TFD_dict[2])
     print(eig)
     energy_list = [100]
-    pdb.set_trace()
+    #pdb.set_trace()
     for k in range(num_gates):
 
         # Draw random i,alpha,j,beta
