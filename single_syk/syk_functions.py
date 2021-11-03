@@ -80,7 +80,7 @@ def syk_energy(J):
     '''
     Returns the energy of the independent SYK models w.r.t. the vacuum
     '''
-    
+
     N = int(np.size(J,axis=0)/2)
     energy = 0
     for a in range(N):
@@ -98,7 +98,6 @@ def syk_energy(J):
                                     #j = -1
                                     #energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * mat_element_4maj_exc(i,j,a, alpha_a, b, alpha_b, c, alpha_c, d, alpha_d)
                                     energy += J[2*a+alpha_a, 2*b+alpha_b, 2*c+alpha_c, 2*d+alpha_d] * mat_elem_4maj(a, alpha_a, b, alpha_b, c, alpha_c, d, alpha_d)
-    #print(energy)
     return energy
 """
 

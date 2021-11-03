@@ -2,11 +2,12 @@ from math import factorial
 from ground_state_preparation import * 
 from syk_functions import * 
 
-N = 3 # N fermions, 2N Majoranas
-num_gates = 500 #number of left-right blocks
+N = 6 # N fermions, 2N Majoranas
+num_gates = 50000 #number of left-right blocks
 J = 1
 seed = 10
 
+print(f"{2*N} Majoranas")
 #tfd_algor_cooling(N, num_gates, J, seed = seed)
 
 energy_list = np.load(f'single_syk/Data/SYK_N{N}_J{J}_seed{seed}_numgates{num_gates}.npy')
@@ -20,7 +21,7 @@ def get_cmap(n, name='hsv'):
 cmap = get_cmap(len(exact_energies))
 print(exact_energies)
 
-plt.plot(energy_list[:], '.' , label = 'Algorithmic cooling')
+plt.plot(energy_list[:], '.' , markersize = 3 , label = 'Algorithmic cooling')
 #for i in range(4):
 #    plt.axhline(y=exact_energies[i], linestyle='--',c=cmap(i), label = f'Energy level {i}')
 plt.axhline(y=exact_energies[0], color =  'r', label = f'Ground energy')
