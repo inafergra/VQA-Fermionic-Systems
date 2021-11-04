@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 #np.set_printoptions(precision=2)
 
 from syk_functions import *
-from exact_diagonalization_TFD import *
+from exact_diagonalization import *
 
 from scipy.optimize import minimize, differential_evolution
 
@@ -22,6 +22,7 @@ def tfd_algor_cooling(N, num_gates, J, seed = np.random.randint, save = True):
     print(f'Initial energy is {init_energy}')
 
     eig =tfd_exact(N,J_tens)
+    print("Eig")
     print(eig)
     #pdb.set_trace()
     energy_list = [init_energy]
