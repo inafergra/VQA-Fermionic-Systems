@@ -1,9 +1,10 @@
 import numpy as np
 
 import cirq
-from openfermion.ops import MajoranaOperator
-from openfermion.transforms import jordan_wigner
+from openfermion.ops import MajoranaOperator, QubitOperator
+from openfermion.transforms  import jordan_wigner
 from openfermion.linalg import get_sparse_operator
+from openfermion.circuits import ParityPreservingFermionicGate 
 
 from itertools import combinations, permutations
 
@@ -36,19 +37,29 @@ def tfd_exact(N, J):
 
     return e[:10]
 
-#def givens_rotation(indeces, t):
-#    i = indeces[0]
-#    j = indeces[1]
-#    return jordan_wigner(MajoranaOperator(i, np.sin(t)))
+def givens_rotation(indeces, t):
+    i = indeces[0]
+    j = indeces[1]
+    return jordan_wigner(MajoranaOperator(i, np.sin(t)))
 
-
-N = 4
-qubit = cirq.LineQubit(N)
+N = 3
+qubits = cirq.LineQubit.range(N)
 circuit = cirq.Circuit()
 
-giv = jordan_wigner(MajoranaOperator( (1,2),1.0))
+x = QubitOperator(())
+#print(x)
+#print(type(x))
+giv = jordan_wigner(MajoranaOperator( (0) ))
 print(giv)
-circuit.append(cirq.H(qubit[0]))
+#print(cirq.H(qubits[0]))
 
+y = ParityPreservingFermionicGate()
+print(y)
+
+#circuit.append(giv)
+circuit.append(x.get_operators())
+
+print(circuit)
 sim = cirq.Simulator()
 result = sim.simulate(circuit)
+print(result.final_state_vector)

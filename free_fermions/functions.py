@@ -104,19 +104,33 @@ def sq_ham_matrix_element(H, m1, m2):
                                             mat_elem += x*(-1)**(alpha+beta)
     return -1/4*mat_elem
 
+
+
+def coeffm1(N, m1, theta):
+    s = 1
+    for i in range(N):
+        if i==m1:
+            s *= np.sin(theta[i])
+        else:
+            s *= np.cos(theta[i])
+    return s
+
 def ham_average_rotated(theta, H):
     '''
-    Computes the energy TO THE FIRST ORDER of the state given by doing an X rotation of theta[i] in qubit i. 
+    Computes the energy of the state given by doing an X rotation of theta[i] in qubit i. 
     args:
         theta: 1darray (len = number of fermions/qubits N)
     '''
     N = int(np.size(H,axis=0)/2)
     e = 0
+    c = np.prod([np.cos(i)**2 for i in theta])
     for m1 in range(N):
         for m2 in range(N):
-            e += theta[m1]*theta[m2]*ham_matrix_element(H, m1, m2)
+            e += coeffm1(N, m1, theta)*coeffm1(N, m2, theta)*ham_matrix_element(H, m1, m2)
     #print(e)
-    return energy(H) + e
+    return c*energy(H) + np.real(e)
+
+
 
 def sq_ham_average_rotated(theta,H):
     """
@@ -129,8 +143,7 @@ def sq_ham_average_rotated(theta,H):
     for m1 in range(N):
         for m2 in range(N):
             e += theta[m1]*theta[m2]*sq_ham_matrix_element(H, m1, m2)
-    #print(e)
-    return squared_hamiltonian_average(H) +   e
+    return squared_hamiltonian_average(H) +  (1/N**2)*np.real(e)
 
 def variance(theta, H):
     return np.abs(sq_ham_average_rotated(theta, H) - ham_average_rotated(theta, H)**2)

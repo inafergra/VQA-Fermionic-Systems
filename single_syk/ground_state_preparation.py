@@ -4,9 +4,7 @@ import matplotlib.pyplot as plt
 
 from syk_functions import *
 from exact_diagonalization import *
-
 from scipy.optimize import minimize, differential_evolution
-
 from itertools import combinations
 
 def tfd_algor_cooling(N, num_gates, J, seed = np.random.randint, save = True):
@@ -26,6 +24,8 @@ def tfd_algor_cooling(N, num_gates, J, seed = np.random.randint, save = True):
     print(eig)
     #pdb.set_trace()
     energy_list = [init_energy]
+    np.random.seed(seed=2)
+
     for k in range(num_gates):
 
         print('Block ', k)
@@ -51,5 +51,5 @@ def tfd_algor_cooling(N, num_gates, J, seed = np.random.randint, save = True):
         #eig = tfd_exact(N, TFD_model, TFD_dict[2])
         #print(eig)
         if save == True:
-            np.save(f'single_syk/Data/SYK_N{N}_J{J}_seed{seed}_numgates{num_gates}.npy',np.array(energy_list))
-            np.save(f'single_syk/Data/SYKexact_N{N}_J{J}_seed{seed}_numgates{num_gates}.npy',np.array(eig))
+            np.save(f'SYK_N{N}_J{J}_seed{seed}_numgates{num_gates}.npy',np.array(energy_list))
+            np.save(f'SYKexact_N{N}_J{J}_seed{seed}_numgates{num_gates}.npy',np.array(eig))

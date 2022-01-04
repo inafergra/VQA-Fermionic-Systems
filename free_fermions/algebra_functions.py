@@ -21,8 +21,8 @@ def greedy_algorithm(H):
             if  E_1 < E:
                 H = H_1
                 E = E_1
-            x+=1
-    return H
+                x+=1
+    return H, x
 
 def givens_rotation_matrix(H, i, j, t):
     """Compute matrix for Givens rotation G(i,j;t)"""
@@ -44,7 +44,7 @@ def off_diag_frobenius_norm(H):
             x += np.sqrt(H[2*i,2*j]**2 + H[2*i+1,2*j]**2 + H[2*i,2*j+1]**2 + H[2*i+1,2*j+1]**2)
     return 2*x
 
-def paardekoper_algorithm(H, tolerance = 1e-5, saved_angles = []):
+def paardekoper_algorithm(H, tolerance = 1e-5, saved_angles = [], sweeps = 1):
     '''
     Naive strategy
     '''
@@ -56,8 +56,8 @@ def paardekoper_algorithm(H, tolerance = 1e-5, saved_angles = []):
     norm = off_diag_frobenius_norm(H)
     angles = []
 
-    while norm > tolerance:
-    #for i in range(1):
+    #while norm > tolerance:
+    for i in range(int(sweeps)):
         for j in range(2*N-2,1,-2):
             for i in range(0,j,2):
 
@@ -117,7 +117,7 @@ def paardekoper_algorithm(H, tolerance = 1e-5, saved_angles = []):
 
 def optimal_givens_sequence(H):
 
-    N = N = int(np.size(H,axis=0)/2)
+    N = int(np.size(H,axis=0)/2)
 
     # Find the O
     eig_vals, O = np.linalg.eigh(np.matmul(H,H))
@@ -143,3 +143,18 @@ def optimal_givens_sequence(H):
             H = G @ H @ np.transpose(G)
             n += 1
 
+def greedy_paard(H_0, exact_gs_energy, sweeps):
+    N = int(np.size(H_0,axis=0)/2)
+
+    #print('Applying Paardakopers (Uj)...')
+    H, offnorm, sweeps, angles = paardekoper_algorithm(H_0, sweeps = sweeps)
+
+    #print('Applying greedy algorithm...')
+    H, givens_used_in_greedy = greedy_algorithm(H)
+
+    final_energy = energy(H)
+    energy_error = abs((final_energy - exact_gs_energy)*100/exact_gs_energy)
+
+    number_of_givens = 4*(N*(N-1)/2)*sweeps + givens_used_in_greedy
+
+    return energy_error, number_of_givens
