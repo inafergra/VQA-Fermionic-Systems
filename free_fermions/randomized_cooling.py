@@ -16,7 +16,7 @@ H = init_coeff_matrix(N)
 init_energy = energy(H)
 print(f'Initial energy is {init_energy}')
 
-new_H_eq_mix = H
+#new_H_eq_mix = H
 new_H_num = H
 
 energy_list_mix = []

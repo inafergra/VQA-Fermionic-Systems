@@ -10,8 +10,10 @@ N = 10
 variational_layer = True
 tolerance = 1e2
 
-fermion_list = range(3,8)
+fermion_list = range(3,7)
 sweeps_list = range(1,5)
+iterations = 15
+
 
 #print(f'{N} fermions')
 
@@ -53,97 +55,75 @@ else:
 
     ground_energy_error_novar = []
     ground_energy_error_var = []
-    variance_novar = []
-    variance_var = []
-
-    for N in fermion_list:
-        sweeps = 1
-
-        tolerance = 1e-1
-        print(f"{N} fermions")
-        print(f"{sweeps} sweeps")
-
-        #print('Initializing matrix, initial state vacuum ...')
-        H0 = init_coeff_matrix(N)
-        init_norm = off_diag_frobenius_norm(H0)
-        exact_energies, parity = exact_energy_levels(H0,2)
-        print(f'Exact ground energy: {exact_energies[0]}')
-        print(f'Exact second excited energy: {exact_energies[1]}')
-        #print() 
-        print(f"Determinant {parity}")
         
+    for N in fermion_list:
+        avr_list_err_novar = np.zeros(iterations)
+        avr_list_err_var = np.zeros(iterations)
 
-        #print(f'Initial off-diagonal norm {init_norm}') 
-        #print(f'Initial variance {variance(np.zeros(N), H0)}')
-        #print(f'Initial variance {squared_hamiltonian_average(H0) - energy(H0)**2}')
-        #print(f'Initial energy {energy(H0)}')
-        #print()
+        for iteration in range(iterations):
 
-        #print("Calculating the angles of Uj")
-        H, norm, sweeps, angles = paardekoper_algorithm(H0, sweeps = sweeps)
-        #print(f'Off-diagonal norm applying Uj: {norm}')
-        #print(f'Number of sweeps = {sweeps}')
-        #print()
+            sweeps = 1
 
-        #print("Applying Paardekopers (Uj)")
-        #H, norm, sweeps = paardekoper_algorithm(H0, saved_angles =  angles, sweeps =sweeps)
-        #print(f'Off-diagonal norm {norm}')
-        #print(f'Number of sweeps = {sweeps}')
-        #print(f'Energy {energy(H)}')
-        #print(f'Variance {variance(np.zeros(N), H)}')
-        #print()
+            print(f"{N} fermions")
+            print(f"{sweeps} sweeps")
 
-        #print('Applying greedy algorithm...')
-        H, number_of_givens = greedy_algorithm(H)
-        #print(f'Off-diagonal norm {off_diag_frobenius_norm(H)}') 
-        en = energy(H)
+            H0 = init_coeff_matrix(N)
+            init_norm = off_diag_frobenius_norm(H0)
+            exact_energies, parity = exact_energy_levels(H0,2)
+            print(f'Exact ground energy: {exact_energies[0]}')
+            print(f'Exact first excited energy: {exact_energies[1]}')
 
-        if (en>exact_energies[1]):
-            ground_energy = exact_energies[1]
-        else:
-            ground_energy = exact_energies[0]
+            H, norm, sweeps, angles = paardekoper_algorithm(H0, sweeps = sweeps)
+            H, number_of_givens = greedy_algorithm(H)
+            en = energy(H)
 
-        print(f"Ground energy {ground_energy} up to parity")
+            H0 = np.copy(H)
+            cooled_energy = randomized_cooling(H0)[-1]
+            print(cooled_energy)
 
-        print(f"Energy without variational layer {en}")
-        err = 100*np.abs((en-ground_energy)/ground_energy)
-        #print(f'Ground energy error (%) without variational layer {err}')
-        #var = variance(np.zeros(N), H)
-        #print(f"Variance {var}")
-        ground_energy_error_novar.append(err)
-        variance_novar.append(var)
-        #print()
+            if np.abs(cooled_energy-exact_energies[0])<np.abs(cooled_energy-exact_energies[1]):
+                ground_energy = exact_energies[0]
+            else:
+                ground_energy = exact_energies[1]
 
-        #print("Optimizing variational layer")
-        #vari = partial(variance, H = H)
-        vari = partial(ham_average_rotated, H=H)
-        theta0 = np.zeros(N)
-        #print(vari(theta0))
-        bounds = [(0, 2*np.pi)]*N
+            print(np.abs(cooled_energy-exact_energies[0]))
+            print(np.abs(cooled_energy-exact_energies[1]))
+            print(f"Ground energy {ground_energy} up to parity")
 
-        minimize_dictionary = minimize(vari, x0=theta0,
-                                    options={'disp': True,'maxiter': 1000},
-                                    method = 'Nelder-Mead')
-        #minimize_dictionary = differential_evolution(vari, maxiter=10000,# 'maxiter': 30},
-        #                            bounds = bounds)
-        optimal_theta = minimize_dictionary['x']
+            print(f"Energy without variational layer {en}")
+            err_novar = 100*np.abs((en-ground_energy)/ground_energy)
+            avr_list_err_novar[iteration] = err_novar
 
-        #print(optimal_theta)
-        print(f'Energy with variational layer {ham_average_rotated(optimal_theta, H)}')
-        #var = variance(optimal_theta, H)
-        #print(f'Variance with variational layer {var}')
-        err = -100*np.abs(ham_average_rotated(optimal_theta, H)-ground_energy)/ground_energy
-        #print(f'Ground energy error (%) with variational layer {err}')
-        ground_energy_error_var.append(err)
-        #variance_var.append(var)
-    
-        #print(f'Final norm {off_diag_frobenius_norm(H)} with variational circuit')
+            print(f'Ground energy error (%) without variational layer {err_novar}')
+            vari = partial(ham_average_rotated, H=H)
+            theta0 = np.zeros(N)
+            #print(vari(theta0))
+            bounds = [(0, 2*np.pi)]*N
 
-        #print(ground_energy_error_novar) 
-        #print(ground_energy_error_var)
-        #print(variance_novar)
-        #print(variance_var)
-        print()
+            minimize_dictionary = minimize(vari, x0=theta0,
+                                        options={'disp': True,'maxiter': 1000},
+                                        method = 'Nelder-Mead')
+            #minimize_dictionary = differential_evolution(vari, maxiter=10000,# 'maxiter': 30},
+            #                            bounds = bounds)
+            optimal_theta = minimize_dictionary['x']
+
+            print(optimal_theta)
+            print(f'Energy with variational layer {ham_average_rotated(optimal_theta, H)}')
+            #var = variance(optimal_theta, H)
+            #print(f'Variance with variational layer {var}')
+            err_var = -100*np.abs(ham_average_rotated(optimal_theta, H)-exact_energies[0])/exact_energies[0]
+            avr_list_err_var[iteration] = err_var
+            print(f'Ground energy error (%) with variational layer {err_var}')
+            #variance_var.append(var)
+            #print(f'Final norm {off_diag_frobenius_norm(H)} with variational circuit')
+
+            print()
+
+
+        ground_energy_error_var.append(np.average(avr_list_err_var))
+        ground_energy_error_novar.append(np.average(avr_list_err_novar))
+
+
 
 
 plt.plot(fermion_list, ground_energy_error_novar, ".-", label = "Without variational layer")
@@ -153,12 +133,7 @@ plt.xlabel("Number of fermions")
 plt.ylabel("Ground energy error (%)")
 plt.show()
 
-plt.plot(fermion_list, variance_novar, ".-", label = "Without variational layer")
-plt.plot(fermion_list, variance_var, ".-", label = "With variational layer")
-plt.legend()
-plt.xlabel("Number of fermions")
-plt.ylabel("Variance")
-plt.show()
+
 
 """the more fermions, the smaller the tolerance has to be in the first place in order to 
 distinguish the ground/first excited energy (could happen that optimizing the variance the

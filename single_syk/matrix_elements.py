@@ -1,4 +1,3 @@
-
 # Mathematica calculations of the matrix elements:
 
 def kdf(a,b):
