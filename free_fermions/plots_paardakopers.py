@@ -8,7 +8,7 @@ givens_paard_list = np.load(f"free_fermions/data/givens_paard_list_avrg{avrg_num
 print(givens_paard_list)
 
 start=0
-plt.plot(N_list, givens_random_list, "ro", label = "Randomized cooling")
+plt.plot(N_list, givens_random_list, "ro", label = "Algorithmic cooling")
 plt.plot(N_list, givens_paard_list, "gv", label = "Paardakoper-based algorithm")
 plt.legend()
 plt.xticks(N_list)
